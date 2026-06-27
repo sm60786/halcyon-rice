@@ -115,7 +115,7 @@ cd ~/HyDE/Scripts
 ### 2. Clone this repo
 
 ```bash
-git clone https://github.com/<your-username>/halcyon ~/halcyon
+git clone https://github.com/sm60786/halcyon-rice ~/halcyon
 cd ~/halcyon
 ```
 
@@ -262,7 +262,7 @@ If this setup helped you, consider starring the repo or supporting my work:
 
 - ⭐ Star this repository
 - ☕ [Buy me a coffee](https://www.buymeacoffee.com/) <!-- replace with your link -->
-- 💖 [GitHub Sponsors](https://github.com/sponsors/) <!-- replace with your username -->
+- 💖 [GitHub Sponsors](https://github.com/sponsors/sm60786) <!-- enable sponsors to activate -->
 
 ---
 
