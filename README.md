@@ -270,11 +270,12 @@ bindd = $mainMod, J, toggle split, layoutmsg, togglesplit
 
 ## 💜 Support
 
-If this setup helped you, consider starring the repo or supporting my work:
+If this setup helped you, consider starring the repo or sponsoring my work:
 
 - ⭐ Star this repository
-- ☕ [Buy me a coffee](https://www.buymeacoffee.com/) <!-- replace with your link -->
-- 💖 [GitHub Sponsors](https://github.com/sponsors/sm60786) <!-- enable sponsors to activate -->
+- 💖 [Sponsor me on GitHub](https://github.com/sponsors/sm60786)
+
+[![Sponsor on GitHub](https://img.shields.io/badge/Sponsor-%E2%9D%A4-db61a2?logo=githubsponsors&logoColor=white)](https://github.com/sponsors/sm60786)
 
 ---
 
