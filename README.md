@@ -1,8 +1,8 @@
 <div align="center">
 
-# 🦅 dotfiles
+# 🌊 halcyon
 
-**My personal Linux rice — a [Hyprland](https://hypr.land) desktop built on the [HyDE](https://github.com/HyDE-Project/HyDE) framework.**
+**A calm, polished Linux rice — my personal [Hyprland](https://hypr.land) desktop built on the [HyDE](https://github.com/HyDE-Project/HyDE) framework.**
 
 ![OS](https://img.shields.io/badge/OS-Arch_Linux-1793D1?logo=archlinux&logoColor=white)
 ![WM](https://img.shields.io/badge/WM-Hyprland-58E1FF?logo=wayland&logoColor=black)
@@ -115,8 +115,8 @@ cd ~/HyDE/Scripts
 ### 2. Clone this repo
 
 ```bash
-git clone <your-repo-url> ~/dotfiles
-cd ~/dotfiles
+git clone https://github.com/<your-username>/halcyon ~/halcyon
+cd ~/halcyon
 ```
 
 ### 3. Preview the changes (recommended)
@@ -163,7 +163,7 @@ Because the configs are **symlinked**, you just edit files normally — your liv
 desktop and this repo are the same files. To save and publish changes:
 
 ```bash
-cd ~/dotfiles
+cd ~/halcyon
 git add -A
 git commit -m "tweak: describe what changed"
 git push
@@ -172,7 +172,7 @@ git push
 To pull updates on another machine:
 
 ```bash
-cd ~/dotfiles
+cd ~/halcyon
 git pull
 ./install.sh   # re-link anything new
 ```
@@ -194,7 +194,7 @@ mv ~/.dotfiles-backup/<timestamp>/.config/hypr ~/.config/hypr
 ## 🗂 Repository structure
 
 ```
-dotfiles/
+halcyon/
 ├── .config/
 │   ├── hypr/         # Hyprland (wm, lock, idle, animations, rules…)
 │   ├── waybar/       # status bar
