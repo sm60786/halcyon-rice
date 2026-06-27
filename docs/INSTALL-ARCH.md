@@ -101,7 +101,7 @@ HyDE will build on:
 | **User account** | create your user, tick **"is superuser / sudo"** |
 | **Profile** | **Minimal** ← *no desktop environment; HyDE installs the desktop later* |
 | **Audio** | **Pipewire** |
-| **Kernels** | `linux` (add `linux-lts` for a fallback kernel) |
+| **Kernels** | **`linux-lts`** (stable, recommended primary) — optionally also tick `linux` as a fallback |
 | **Network configuration** | **NetworkManager** ← important, HyDE/Wi‑Fi rely on it |
 | **Additional packages** | `git base-devel wget nano` (minimal helpers) |
 | **Timezone** | your zone |
