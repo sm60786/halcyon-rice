@@ -1,0 +1,45 @@
+local opt = vim.opt
+
+opt.number = true
+opt.relativenumber = true
+opt.tabstop = 2
+opt.shiftwidth = 2
+opt.expandtab = true
+opt.smartindent = true
+opt.wrap = false
+opt.cursorline = true
+opt.termguicolors = true
+opt.signcolumn = "yes"
+opt.scrolloff = 8
+opt.sidescrolloff = 8
+opt.updatetime = 200
+opt.timeoutlen = 300
+opt.undofile = true
+opt.undolevels = 10000
+opt.swapfile = false
+opt.backup = false
+opt.writebackup = false
+opt.splitbelow = true
+opt.splitright = true
+opt.ignorecase = true
+opt.smartcase = true
+opt.hlsearch = true
+opt.incsearch = true
+opt.showmode = false
+opt.clipboard = "unnamedplus"
+opt.mouse = "a"
+opt.pumheight = 10
+opt.pumblend = 10
+opt.winblend = 0
+opt.completeopt = "menu,menuone,noselect"
+opt.conceallevel = 2
+opt.confirm = true
+opt.fillchars = { eob = " ", diff = "/" }
+opt.foldlevel = 99
+opt.smoothscroll = true
+opt.linebreak = true
+opt.spelllang = { "en" }
+
+vim.g.mapleader = " "
+vim.g.maplocalleader = "\\"
+vim.g.autoformat = true

@@ -1,0 +1,22 @@
+# Backups created by install.sh (kept outside repo, but ignore if ever placed here)
+.dotfiles-backup/
+
+# Editor / OS noise
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Neovim runtime data that must NOT be committed (only config under .config/nvim is tracked)
+.config/nvim/lazy-lock.json.bak
+.config/nvim/.netrwhist
+plugin/packer_compiled.lua
+
+# Caches / state that can leak machine-specific data
+*.log
+*.bak
+*.tmp
+
+# HyDE-managed, machine-specific or huge assets (do not version these)
+.config/hyde/themes/
+.config/hyde/wallbash/*.cache
