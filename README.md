@@ -52,13 +52,13 @@ symlinks, so once installed you **edit files in this repo and the changes are li
 
 ## 📸 Screenshots
 
-> Add your own screenshots here so people can see the rice before installing.
-> Drop images in an `assets/` folder and reference them:
-
-```md
 ![Desktop](assets/desktop.png)
-![Lockscreen](assets/lockscreen.png)
-```
+
+![Fastfetch](assets/fastfetch.png)
+
+<sub>Hyprland · Waybar · kitty · fastfetch — Obsidian-Purple theme</sub>
+
+> More shots coming soon (lockscreen, app launcher).
 
 ---
 

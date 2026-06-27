@@ -18,9 +18,9 @@ fastfetch --config hyde/*.jsonc
   "modules": [
     {
       "type": "command",
-      "key": "  ",
+      "key": "  \uf10d ",
       "keyColor": "blue",
-      "text": "splash=$(hyprctl splash);echo $splash"
+      "text": "shuf -n 1 \"${XDG_CONFIG_HOME:-$HOME/.config}/fastfetch/splash.txt\" | sed \"s/{year}/$(($(date +%Y)+1))/\""
     },
     {
       "type": "custom",
@@ -39,7 +39,7 @@ fastfetch --config hyde/*.jsonc
     },
     {
       "type": "kernel",
-      "key": "   Kernel",
+      "key": "   Kernel",
       "format": "{2}",
       "keyColor": "red"
     },
@@ -56,7 +56,7 @@ fastfetch --config hyde/*.jsonc
     },
     {
       "type": "terminal",
-      "key": "   Terminal",
+      "key": "   Terminal",
       "keyColor": "yellow"
     },
     {
@@ -72,7 +72,7 @@ fastfetch --config hyde/*.jsonc
     "break",
     {
       "type": "title",
-      "key": "  ",
+      "key": "  \uf007 ",
       "format": "{6} {7} {8}"
     },
     {
@@ -82,7 +82,7 @@ fastfetch --config hyde/*.jsonc
     {
       "type": "cpu",
       "format": "{1} @ {7}",
-      "key": "   CPU",
+      "key": "   CPU",
       "keyColor": "blue"
     },
     {
@@ -94,12 +94,12 @@ fastfetch --config hyde/*.jsonc
     {
       "type": "gpu",
       "format": "{3}",
-      "key": "   GPU Driver",
+      "key": "   GPU Driver",
       "keyColor": "magenta"
     },
     {
       "type": "memory",
-      "key": "   Memory ",
+      "key": "   Memory ",
       "keyColor": "magenta"
     },
     {
