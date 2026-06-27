@@ -84,7 +84,7 @@ symlinks, so once installed you **edit files in this repo and the changes are li
 ## ✅ Requirements
 
 - **Arch Linux** (or an Arch-based distro)
-- **[Hyprland](https://hypr.land) ≥ 0.55**
+- **[Hyprland](https://hypr.land) ≥ 0.55** (Wayland)
 - **[HyDE](https://github.com/HyDE-Project/HyDE)** installed and working
 - `git`, `bash`
 - The apps you intend to use:
@@ -96,6 +96,20 @@ yay -S wlogout
 ```
 
 > If you installed HyDE, most of these are already present.
+
+### Compatibility
+
+| | |
+|---|---|
+| ✅ **Supported** | Arch Linux & Arch-based (EndeavourOS, CachyOS, Garuda, …) with HyDE |
+| ⚠️ **Not out of the box** | Debian/Ubuntu/Fedora/openSUSE (HyDE is Arch-focused), or any non-Hyprland / X11 setup |
+| 🖥️ **Session** | Wayland only |
+
+After installing, review two machine-specific files: `hypr/monitors.conf` (your display
+layout) and `hypr/nvidia.conf` (only on NVIDIA GPUs).
+
+> 🆕 **Brand new to Arch?** Start here: **[Full Arch + HyDE + halcyon install guide →](docs/INSTALL-ARCH.md)**
+> (bootable USB, Wi-Fi over CLI, `archinstall`, minimal packages, HyDE, then halcyon).
 
 ---
 
