@@ -1,80 +1,276 @@
-# dotfiles
+<div align="center">
 
-My personal Linux rice — a [Hyprland](https://hypr.land) setup built on top of the
-[HyDE](https://github.com/HyDE-Project/HyDE) framework on Arch Linux.
+# 🦅 dotfiles
 
-This repo tracks the configs I actually edit and lets me restore them on any
-machine with a single script. Everything is symlinked back into `~/.config`, so
-once installed you edit files here and the changes are live.
+**My personal Linux rice — a [Hyprland](https://hypr.land) desktop built on the [HyDE](https://github.com/HyDE-Project/HyDE) framework.**
 
-> [!NOTE]
-> This sits **on top of HyDE**. Install HyDE first; these files override/extend
-> it. The large, HyDE-managed `~/.config/hyde/themes/` directory is intentionally
-> not tracked here.
+![OS](https://img.shields.io/badge/OS-Arch_Linux-1793D1?logo=archlinux&logoColor=white)
+![WM](https://img.shields.io/badge/WM-Hyprland-58E1FF?logo=wayland&logoColor=black)
+![Shell](https://img.shields.io/badge/Shell-Zsh-89e051?logo=zsh&logoColor=white)
+![License](https://img.shields.io/badge/License-GPL_3.0-blue.svg)
 
-## What's inside
+</div>
 
-| Path | Tool |
-|------|------|
-| `.config/hypr` | Hyprland (keybindings, window rules, hyprlock, hypridle, animations…) |
-| `.config/waybar` | Status bar |
-| `.config/rofi` | App launcher / menus |
-| `.config/kitty` | Terminal |
-| `.config/dunst` | Notifications |
-| `.config/wlogout` | Logout menu |
-| `.config/nvim` | Neovim config |
-| `.config/cava` | Audio visualizer |
-| `.config/fastfetch` | System info on shell start |
-| `.config/starship` | Shell prompt |
-| `.config/hyde/config.toml`, `.config/hyde/wallbash` | HyDE per-user settings & wallbash templates |
+---
 
-## Requirements
+## 📑 Table of contents
 
-- Arch Linux (or derivative)
-- [Hyprland](https://hypr.land) `>= 0.55`
-- [HyDE](https://github.com/HyDE-Project/HyDE) installed
-- The tools you want to use: `waybar`, `rofi`, `kitty`, `dunst`, `wlogout`,
-  `neovim`, `cava`, `fastfetch`, `starship`
+- [About](#-about)
+- [Screenshots](#-screenshots)
+- [What's included](#-whats-included)
+- [Requirements](#-requirements)
+- [Installation](#-installation)
+- [Updating](#-updating)
+- [Uninstall / restore](#-uninstall--restore)
+- [Repository structure](#-repository-structure)
+- [Customization](#-customization)
+- [Troubleshooting](#-troubleshooting)
+- [Credits](#-credits)
+- [Support](#-support)
+- [License](#-license)
 
-## Install
+---
+
+## 📖 About
+
+This repository is my personal collection of configuration files ("dotfiles") for
+a Hyprland-based Wayland desktop on Arch Linux. It is built **on top of**
+[HyDE](https://github.com/HyDE-Project/HyDE) — HyDE provides the base framework,
+theming engine (`wallbash`) and scripts; this repo layers my personal tweaks on
+top (keybindings, window rules, bar layout, prompt, editor, etc.).
+
+Configs are linked into place with a small, dependency-free `install.sh` that uses
+symlinks, so once installed you **edit files in this repo and the changes are live**.
+
+> [!IMPORTANT]
+> This is **not** a standalone desktop. You must install
+> [HyDE](https://github.com/HyDE-Project/HyDE) first; these files extend and
+> override it. The large, HyDE-managed `~/.config/hyde/themes/` directory
+> (wallpapers + generated theme assets) is intentionally **not** tracked here.
+
+---
+
+## 📸 Screenshots
+
+> Add your own screenshots here so people can see the rice before installing.
+> Drop images in an `assets/` folder and reference them:
+
+```md
+![Desktop](assets/desktop.png)
+![Lockscreen](assets/lockscreen.png)
+```
+
+---
+
+## 📦 What's included
+
+| Path | Tool | What it configures |
+|------|------|--------------------|
+| `.config/hypr` | [Hyprland](https://hypr.land) | Window manager: keybindings, window rules, workspaces, animations, monitors, `hyprlock`, `hypridle`, shaders, workflows |
+| `.config/waybar` | [Waybar](https://github.com/Alexays/Waybar) | Status bar — layout, styles, modules |
+| `.config/rofi` | [Rofi](https://github.com/davatorium/rofi) | App launcher / menus theme |
+| `.config/kitty` | [Kitty](https://sw.kovidgoyal.net/kitty/) | Terminal emulator |
+| `.config/dunst` | [Dunst](https://github.com/dunst-project/dunst) | Notification daemon |
+| `.config/wlogout` | [wlogout](https://github.com/ArtsyMacaw/wlogout) | Power / logout menu + icons |
+| `.config/nvim` | [Neovim](https://neovim.io) | Editor config (LazyVim-based) |
+| `.config/cava` | [CAVA](https://github.com/karlstav/cava) | Audio visualizer + shaders/themes |
+| `.config/fastfetch` | [Fastfetch](https://github.com/fastfetch-cli/fastfetch) | System info on shell start + logos |
+| `.config/starship` | [Starship](https://starship.rs) | Shell prompt |
+| `.config/hyde/config.toml` | [HyDE](https://github.com/HyDE-Project/HyDE) | Per-user HyDE settings |
+| `.config/hyde/wallbash` | HyDE wallbash | Color-template scripts for theming apps from the wallpaper |
+
+---
+
+## ✅ Requirements
+
+- **Arch Linux** (or an Arch-based distro)
+- **[Hyprland](https://hypr.land) ≥ 0.55**
+- **[HyDE](https://github.com/HyDE-Project/HyDE)** installed and working
+- `git`, `bash`
+- The apps you intend to use:
+
+```bash
+sudo pacman -S hyprland waybar rofi kitty dunst neovim cava fastfetch starship
+# wlogout is usually from the AUR:
+yay -S wlogout
+```
+
+> If you installed HyDE, most of these are already present.
+
+---
+
+## 🚀 Installation
+
+### 1. Install HyDE first (if you haven't)
+
+Follow the official guide: <https://github.com/HyDE-Project/HyDE>
+
+```bash
+pacman -S --needed git base-devel
+git clone --depth 1 https://github.com/HyDE-Project/HyDE ~/HyDE
+cd ~/HyDE/Scripts
+./install.sh
+```
+
+### 2. Clone this repo
 
 ```bash
 git clone <your-repo-url> ~/dotfiles
 cd ~/dotfiles
+```
 
-# Preview what would change (recommended first run):
+### 3. Preview the changes (recommended)
+
+The dry run shows exactly what will be linked or backed up — **nothing is changed**:
+
+```bash
 ./install.sh --dry-run
+```
 
-# Create the symlinks (existing files are backed up automatically):
+### 4. Apply
+
+```bash
 ./install.sh
 ```
 
-Anything that already existed is moved to `~/.dotfiles-backup/<timestamp>/`
-before a symlink is created, so nothing is lost.
+Any existing config is **moved to a timestamped backup** at
+`~/.dotfiles-backup/<YYYYMMDD-HHMMSS>/` before a symlink is created, so nothing is
+lost. The script is **idempotent** — safe to re-run anytime.
 
-### Options
+#### Installer options
 
 | Flag | Effect |
 |------|--------|
-| `--dry-run` | Show planned actions without changing anything |
-| `--force` | Overwrite existing symlinks without creating a backup |
+| _(none)_ | Link everything, backing up anything in the way |
+| `--dry-run` | Show planned actions, change nothing |
+| `--force` | Overwrite existing symlinks **without** creating a backup |
+| `-h`, `--help` | Show usage |
 
-## Updating
+### 5. Reload
 
-Because configs are symlinked, just edit normally, then:
+```bash
+hyprctl reload          # reload Hyprland
+killall -SIGUSR2 waybar # reload Waybar (or just relog)
+```
+
+Log out and back in for everything (prompt, fastfetch, etc.) to take full effect.
+
+---
+
+## 🔄 Updating
+
+Because the configs are **symlinked**, you just edit files normally — your live
+desktop and this repo are the same files. To save and publish changes:
 
 ```bash
 cd ~/dotfiles
 git add -A
-git commit -m "tweak: <what changed>"
+git commit -m "tweak: describe what changed"
 git push
 ```
 
-## Credits
+To pull updates on another machine:
 
-- [HyDE-Project/HyDE](https://github.com/HyDE-Project/HyDE) — the base framework.
-- The Hyprland community.
+```bash
+cd ~/dotfiles
+git pull
+./install.sh   # re-link anything new
+```
 
-## License
+---
 
-[MIT](./LICENSE)
+## ♻️ Uninstall / restore
+
+The installer never deletes — it backs up. To restore a previous setup, remove the
+symlinks and move your backup back, e.g.:
+
+```bash
+rm ~/.config/hypr   # removes the symlink only
+mv ~/.dotfiles-backup/<timestamp>/.config/hypr ~/.config/hypr
+```
+
+---
+
+## 🗂 Repository structure
+
+```
+dotfiles/
+├── .config/
+│   ├── hypr/         # Hyprland (wm, lock, idle, animations, rules…)
+│   ├── waybar/       # status bar
+│   ├── rofi/         # launcher
+│   ├── kitty/        # terminal
+│   ├── dunst/        # notifications
+│   ├── wlogout/      # power menu
+│   ├── nvim/         # editor
+│   ├── cava/         # audio visualizer
+│   ├── fastfetch/    # system info
+│   ├── starship/     # prompt
+│   └── hyde/         # config.toml + wallbash (themes/ excluded)
+├── install.sh        # symlink installer (dry-run / force / backups)
+├── README.md
+├── LICENSE           # GPL-3.0
+└── .gitignore
+```
+
+---
+
+## 🎨 Customization
+
+- **Keybindings:** `.config/hypr/keybindings.conf`
+- **Window rules:** `.config/hypr/windowrules.conf`
+- **Monitors:** `.config/hypr/monitors.conf` (machine-specific — edit per device)
+- **Personal Hyprland overrides:** `.config/hypr/userprefs.conf`
+- **Bar layout/style:** `.config/waybar/`
+- **Prompt:** `.config/starship/starship.toml`
+- **Themes/wallpapers:** managed by HyDE — use `hyde-shell` / the HyDE theme picker
+  rather than editing `~/.config/hyde/themes/` by hand.
+
+---
+
+## 🩹 Troubleshooting
+
+**`config option <dwindle:pseudotile> does not exist`**
+Removed in Hyprland 0.55 (it did nothing). Delete the line; pseudotile is now
+per-window via the `pseudo` dispatcher.
+
+**`Invalid dispatcher, requested "togglesplit" does not exist`**
+The `togglesplit`/`swapsplit` dispatchers were removed in Hyprland 0.54+. Use
+`layoutmsg` instead:
+
+```ini
+bindd = $mainMod, J, toggle split, layoutmsg, togglesplit
+```
+
+**Monitors are wrong after install**
+`monitors.conf` is machine-specific. Edit it (or use `nwg-displays`) for your setup.
+
+---
+
+## 🙏 Credits
+
+- [**HyDE-Project/HyDE**](https://github.com/HyDE-Project/HyDE) — the base framework,
+  theming engine, and many of the scripts/configs this repo builds on (GPL-3.0).
+- The [Hyprland](https://hypr.land) project and community.
+- Authors of every tool listed in [What's included](#-whats-included).
+
+---
+
+## 💜 Support
+
+If this setup helped you, consider starring the repo or supporting my work:
+
+- ⭐ Star this repository
+- ☕ [Buy me a coffee](https://www.buymeacoffee.com/) <!-- replace with your link -->
+- 💖 [GitHub Sponsors](https://github.com/sponsors/) <!-- replace with your username -->
+
+---
+
+## 📜 License
+
+Distributed under the **GNU General Public License v3.0** — see [LICENSE](./LICENSE).
+
+This repository contains and derives from [HyDE](https://github.com/HyDE-Project/HyDE),
+which is licensed under GPL-3.0. As a derivative work, this repository is also
+distributed under GPL-3.0. You are free to use, study, modify, and redistribute it
+under the same license.
