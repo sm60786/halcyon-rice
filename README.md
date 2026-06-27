@@ -101,6 +101,18 @@ yay -S wlogout
 
 ## 🚀 Installation
 
+> [!IMPORTANT]
+> **When to do this:** clone and run the installer **only after you have a working
+> HyDE desktop** — i.e. as the *last* step, not on a bare system. The correct order is:
+>
+> 1. Install **Arch Linux** (base system, working boot + internet).
+> 2. Install **[HyDE](https://github.com/HyDE-Project/HyDE)** and **reboot into Hyprland at least once** so HyDE generates its files under `~/.config`.
+> 3. *(Optional)* install any [extra apps](#-requirements) you want (`wlogout`, etc.).
+> 4. **Then** clone this repo and run `./install.sh` to layer `halcyon` on top.
+>
+> Running the installer before HyDE exists will back up empty/missing configs and
+> some apps won't have anything to theme yet.
+
 ### 1. Install HyDE first (if you haven't)
 
 Follow the official guide: <https://github.com/HyDE-Project/HyDE>
