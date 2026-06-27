@@ -80,16 +80,24 @@ build_menu() {
     pactl list sinks | awk -v def="$def" -v D="$DELIM" '
         function flush() {
             if (name != "") {
-                label = (nick != "") ? nick : desc
-                icon = (name == def) ? "\xef\x80\xa8" : "\xef\x80\xa6"   # default vs speaker glyph
-                printf "%s %s%s%s%s%s\n", icon, label, D, "sink", D, name
+                # skip sinks whose active port is physically unavailable
+                # (e.g. HDMI outputs with no monitor/cable connected)
+                skip = (activeport != "" && (activeport in pa) && pa[activeport]==0)
+                if (!skip) {
+                    label = (nick != "") ? nick : desc
+                    icon = (name == def) ? "\xef\x80\xa8" : "\xef\x80\xa6"   # default vs speaker glyph
+                    printf "%s %s%s%s%s%s\n", icon, label, D, "sink", D, name
+                }
             }
-            name=""; desc=""; nick=""
+            name=""; desc=""; nick=""; activeport=""; delete pa
         }
-        /^Sink #/            { flush() }
-        /^\tName: /          { name=$2 }
-        /^\tDescription: /   { sub(/^\tDescription: /,""); desc=$0 }
-        /node.nick = /       { gsub(/.*node.nick = "|".*/,""); nick=$0 }
+        /^Sink #/                 { flush() }
+        /^\tName: /               { name=$2 }
+        /^\tDescription: /        { sub(/^\tDescription: /,""); desc=$0 }
+        /node.nick = /            { gsub(/.*node.nick = "|".*/,""); nick=$0 }
+        /^[[:space:]]+\[Out\] /   { l=$0; sub(/.*\[Out\] /,"",l); pn=l; sub(/:.*/,"",pn);
+                                    pa[pn]=(index(l,"not available")>0)?0:1 }
+        /Active Port: /           { ap=$0; sub(/.*\[Out\] /,"",ap); activeport=ap }
         END { flush() }
     '
 
