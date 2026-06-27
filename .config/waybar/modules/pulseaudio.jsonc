@@ -1,0 +1,30 @@
+{
+  // halcyon override of HyDE's pulseaudio module.
+  // Loaded via config.jsonc's "modules/*json*" include, which comes BEFORE
+  // HyDE's includes.json, so (Waybar = first-defined-wins) this takes priority
+  // without editing any HyDE-managed file.
+  //
+  // Only change vs HyDE default: right-click opens the smart output picker
+  // (clean names, switches card profile for Speaker/Headphones, moves streams).
+  "pulseaudio": {
+    "format": "{icon} {volume}",
+    "rotate": 0,
+    "format-muted": "婢",
+    "on-click": "pavucontrol -t 3",
+    "on-click-right": "bash ~/.config/waybar/scripts/audiopicker.sh",
+    "on-click-middle": "hyde-shell volumecontrol -o m",
+    "on-scroll-up": "hyde-shell volumecontrol -o i",
+    "on-scroll-down": "hyde-shell volumecontrol -o d",
+    "tooltip-format": "{icon} {desc} // {volume}%",
+    "scroll-step": 5,
+    "format-icons": {
+      "headphone": "",
+      "hands-free": "",
+      "headset": "",
+      "phone": "",
+      "portable": "",
+      "car": "",
+      "default": ["", "", ""]
+    }
+  }
+}
