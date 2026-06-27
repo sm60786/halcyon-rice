@@ -1,0 +1,20 @@
+/* ------------------------------------------------------------------ *
+ * halcyon user overrides for Waybar.
+ * Loaded LAST (after HyDE's defaults.css), but HyDE styles modules with
+ * `window#waybar.top label.module`, which is more specific than a bare
+ * `#pulseaudio`. So prefix selectors with `window#waybar` to win.
+ * ------------------------------------------------------------------ */
+
+/* Microphone module: spacing + vertical alignment of the "icon  NN%" text */
+window#waybar #pulseaudio.microphone {
+    padding-left: 0.4em;
+    padding-right: 0.6em;
+    /* uncomment / adjust if the % text sits too high or low: */
+    /* margin-top: -1px; */
+}
+
+/* Speaker / volume module: keep spacing consistent with the mic */
+window#waybar #pulseaudio {
+    padding-left: 0.4em;
+    padding-right: 0em;
+}

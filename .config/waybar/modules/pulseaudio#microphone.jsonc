@@ -1,0 +1,23 @@
+{
+  // halcyon override of HyDE's microphone module.
+  //
+  // GAP KNOB: the spacing between the icon and the {volume}% value is the
+  // Unicode space between them below. Change just that \u escape to resize
+  // the gap (narrow -> wide):
+  //   \u200a hair space   | \u2009 thin space  | \u2005 four-per-em
+  //   \u2004 three-per-em | \u0020 normal space| \u2002 en space
+  //   \u2003 em space (widest)
+  "pulseaudio#microphone": {
+    "format": "{format_source}",
+    "rotate": 0,
+    "format-source": "\uf130\u2009{volume}%",
+    "format-source-muted": "\uf131\u2009{volume}%",
+    "on-click": "pavucontrol -t 4",
+    "on-click-right": "bash ~/.config/waybar/scripts/audiopicker.sh --input",
+    "on-click-middle": "hyde-shell volumecontrol -i m",
+    "on-scroll-up": "hyde-shell volumecontrol -i i",
+    "on-scroll-down": "hyde-shell volumecontrol -i d",
+    "tooltip-format": "{format_source} {source_desc} // {source_volume}%",
+    "scroll-step": 5
+  }
+}

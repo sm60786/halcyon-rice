@@ -1,0 +1,99 @@
+/**
+ * Compact audio/input picker theme for Waybar right-click menu.
+ * Colors are wallpaper-driven (inherited from ~/.config/rofi/theme.rasi).
+ */
+
+configuration {
+    show-icons:          false;
+    drun-display-format: "{name}";
+}
+
+@theme "~/.config/rofi/theme.rasi"
+
+* {
+    font: "JetBrainsMono Nerd Font 11";
+}
+
+window {
+    enabled:          true;
+    fullscreen:       false;
+    transparency:     "real";
+    location:         center;
+    anchor:           center;
+    width:            23em;
+    border:           2px;
+    border-color:     @main-br;
+    border-radius:    14px;
+    background-color: @main-bg;
+    cursor:           "default";
+}
+
+mainbox {
+    enabled:          true;
+    orientation:      vertical;
+    children:         [ "inputbar", "listview" ];
+    background-color: transparent;
+    spacing:          0.5em;
+    padding:          0.7em;
+}
+
+inputbar {
+    enabled:          true;
+    children:         [ "prompt", "entry" ];
+    background-color: @main-ex;
+    text-color:       @main-fg;
+    padding:          0.5em 0.7em;
+    spacing:          0.5em;
+    border-radius:    10px;
+}
+
+prompt {
+    enabled:          true;
+    background-color: transparent;
+    text-color:       @main-fg;
+}
+
+entry {
+    enabled:           true;
+    background-color:  transparent;
+    text-color:        @main-fg;
+    placeholder:       "Search…";
+    placeholder-color: @main-fg;
+    cursor:            text;
+}
+
+listview {
+    enabled:          true;
+    columns:          1;
+    lines:            6;
+    dynamic:          true;
+    scrollbar:        false;
+    cycle:            true;
+    fixed-height:     false;
+    spacing:          0.25em;
+    padding:          0em;
+    background-color: transparent;
+}
+
+element {
+    enabled:          true;
+    spacing:          0.6em;
+    padding:          0.55em 0.8em;
+    border-radius:    10px;
+    cursor:           pointer;
+    background-color: transparent;
+    text-color:       @main-fg;
+}
+
+element selected.normal {
+    background-color: @select-bg;
+    text-color:       @select-fg;
+}
+
+element-text {
+    vertical-align:   0.5;
+    horizontal-align: 0.0;
+    cursor:           inherit;
+    background-color: transparent;
+    text-color:       inherit;
+}

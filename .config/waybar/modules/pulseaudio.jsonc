@@ -1,6 +1,6 @@
 {
   "pulseaudio": {
-    "format": "{icon} {volume}",
+    "format": "{icon} {volume}%",
     "rotate": 0,
     "format-muted": "婢",
     "on-click": "pavucontrol -t 3",

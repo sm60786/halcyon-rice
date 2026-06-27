@@ -1,64 +1,89 @@
 #!/usr/bin/env bash
 #
-# audiopicker.sh - a smarter audio-output switcher for Waybar (PipeWire/pactl).
+# audiopicker.sh - a smarter audio device switcher for Waybar (PipeWire/pactl).
 #
-# Improvements over a plain "set-default-sink" picker:
-#   * Clean, friendly device names (strips the long controller prefix).
-#   * Surfaces outputs that are hidden behind another card PROFILE
-#     (e.g. laptop Speaker vs Headphones that are mutually exclusive),
-#     switching the profile automatically when you pick one.
-#   * Moves ALL currently-playing streams to the chosen device, so sound
-#     switches immediately instead of only for new apps.
-#   * Unmutes the target so you actually hear it.
+# Works for both OUTPUT (sinks) and INPUT (sources):
+#   audiopicker.sh            # pick an output device (default)
+#   audiopicker.sh --input    # pick an input (microphone) device
 #
-# Menu uses rofi if available, otherwise wofi, otherwise prints to stdout.
+# Features:
+#   * Clean, friendly device names.
+#   * Marks the currently-selected device with a ● bullet.
+#   * Surfaces devices hidden behind another card PROFILE (e.g. laptop Speaker
+#     vs Headphones) and switches the profile automatically when picked.
+#   * Moves ALL active streams to the chosen device (instant switch).
+#   * Hides physically-unavailable devices (empty HDMI / headphone jack) and
+#     monitor sources.
+#
+# Extra flags: --list (debug dump), --pick "<label substring>" (non-interactive).
+# Menu uses rofi, else wofi, else stdout.
 
 set -uo pipefail
 
-DELIM=$'\x1f' # unit separator, used to hide metadata in menu lines
+DELIM=$'\x1f'        # unit separator: hides metadata in menu lines
+CUR=$'\u25cf'        # ● marker for the currently-selected device
+
+# ---------------------------------------------------------------------------
+# Parse args
+# ---------------------------------------------------------------------------
+MODE="output"; ACTION="menu"; PICKARG=""
+while [ $# -gt 0 ]; do
+    case "$1" in
+        --input|-i)  MODE="input" ;;
+        --output|-o) MODE="output" ;;
+        --list)      ACTION="list" ;;
+        --pick)      ACTION="pick"; PICKARG="${2:-}"; shift ;;
+    esac
+    shift
+done
+
+# ---------------------------------------------------------------------------
+# Mode-specific configuration
+# ---------------------------------------------------------------------------
+if [ "$MODE" = "input" ]; then
+    KIND="sources"; BLOCK="Source"; DIR="In"; NOUN="Input"; APP="Microphone"
+    ICON=$'\uf130'                      # microphone glyph
+    GET_DEFAULT="get-default-source"; SET_DEFAULT="set-default-source"
+    STREAMS="source-outputs"; MOVE="move-source-output"; SETMUTE="set-source-mute"
+    SKIP_MONITORS=1; UNMUTE=0
+else
+    KIND="sinks"; BLOCK="Sink"; DIR="Out"; NOUN="Output"; APP="Audio"
+    ICON=$'\uf028'                      # speaker glyph
+    GET_DEFAULT="get-default-sink"; SET_DEFAULT="set-default-sink"
+    STREAMS="sink-inputs"; MOVE="move-sink-input"; SETMUTE="set-sink-mute"
+    SKIP_MONITORS=0; UNMUTE=1
+fi
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-# Non-blocking notification: backgrounded + capped, so a missing/unresponsive
-# notification daemon can never hang the switcher.
 notify() {
     command -v notify-send >/dev/null || return 0
     ( timeout 1 notify-send "$@" >/dev/null 2>&1 & ) 2>/dev/null
 }
 
-# Friendly label: strip the card's controller description prefix if present.
-clean_name() {
-    local desc="$1" prefix="$2"
-    [ -n "$prefix" ] && desc="${desc#"$prefix" }"
-    echo "$desc"
-}
-
-current_default() { pactl get-default-sink; }
+current_default() { pactl "$GET_DEFAULT"; }
 
 move_all_streams() {
-    local sink="$1" id
-    for id in $(pactl list short sink-inputs | cut -f1); do
-        pactl move-sink-input "$id" "$sink" 2>/dev/null
+    local target="$1" id
+    for id in $(pactl list short "$STREAMS" | cut -f1); do
+        pactl "$MOVE" "$id" "$target" 2>/dev/null
     done
 }
 
-activate_sink() {
-    local sink="$1" label="$2"
-    pactl set-default-sink "$sink"
-    pactl set-sink-mute "$sink" 0 2>/dev/null
-    move_all_streams "$sink"
-    notify -a "Audio" -t 2000 -r 9 "Output switched" "$label"
+activate_device() {
+    local dev="$1" label="$2"
+    pactl "$SET_DEFAULT" "$dev"
+    [ "$UNMUTE" = 1 ] && pactl "$SETMUTE" "$dev" 0 2>/dev/null
+    move_all_streams "$dev"
+    notify -a "$APP" -t 2000 -r 9 "$NOUN switched" "$label"
 }
 
-# Find the real ALSA sink belonging to a card whose Description contains needle.
-# Restricting to the card's device id avoids matching virtual sinks like
-# "Balanced Headphones" when looking for the "Headphones" port.
-find_sink_by_desc() {
+# Find the real ALSA device of a card whose Description contains needle.
+find_device_by_desc() {
     local needle="$1" card="${2:-}"
     local devid="${card#alsa_card.}"
-    pactl list sinks | awk -v n="$needle" -v dev="$devid" '
+    pactl list "$KIND" | awk -v n="$needle" -v dev="$devid" '
         /^\tName: /        { name=$2 }
         /^\tDescription: / { sub(/^\tDescription: /,"");
             if (index($0,n) && (dev=="" || index(name,dev))) { print name; exit } }'
@@ -67,61 +92,52 @@ find_sink_by_desc() {
 # ---------------------------------------------------------------------------
 # Build the menu
 # ---------------------------------------------------------------------------
-# Each menu line:  "<icon> <label>"  with hidden metadata appended after DELIM:
-#   sink<DELIM><sink-name>
-#   prof<DELIM><card-name><DELIM><profile-name><DELIM><port-desc>
-
 build_menu() {
-    local def
-    def="$(current_default)"
+    local def; def="$(current_default)"
 
-    # 1) Currently available sinks ------------------------------------------
-    #    (use node.nick when present for a short clean name)
-    pactl list sinks | awk -v def="$def" -v D="$DELIM" '
+    # 1) Currently available devices
+    pactl list "$KIND" | awk -v def="$def" -v D="$DELIM" -v dir="$DIR" \
+                              -v icon="$ICON" -v cur="$CUR" -v block="$BLOCK" \
+                              -v skipmon="$SKIP_MONITORS" '
         function flush() {
             if (name != "") {
-                # skip sinks whose active port is physically unavailable
-                # (e.g. HDMI outputs with no monitor/cable connected)
-                skip = (activeport != "" && (activeport in pa) && pa[activeport]==0)
-                if (!skip) {
+                ismon = (skipmon && index(name,".monitor"))
+                skip  = (activeport != "" && (activeport in pa) && pa[activeport]==0)
+                if (!ismon && !skip) {
                     label = (nick != "") ? nick : desc
-                    icon = (name == def) ? "\xef\x80\xa8" : "\xef\x80\xa6"   # default vs speaker glyph
-                    printf "%s %s%s%s%s%s\n", icon, label, D, "sink", D, name
+                    mark  = (name == def) ? (" " cur) : ""
+                    printf "%s %s%s%s%s%s%s\n", icon, label, mark, D, "dev", D, name
                 }
             }
             name=""; desc=""; nick=""; activeport=""; delete pa
         }
-        /^Sink #/                 { flush() }
-        /^\tName: /               { name=$2 }
-        /^\tDescription: /        { sub(/^\tDescription: /,""); desc=$0 }
-        /node.nick = /            { gsub(/.*node.nick = "|".*/,""); nick=$0 }
-        /^[[:space:]]+\[Out\] /   { l=$0; sub(/.*\[Out\] /,"",l); pn=l; sub(/:.*/,"",pn);
-                                    pa[pn]=(index(l,"not available")>0)?0:1 }
-        /Active Port: /           { ap=$0; sub(/.*\[Out\] /,"",ap); activeport=ap }
+        $0 ~ ("^" block " #")            { flush() }
+        /^\tName: /                      { name=$2 }
+        /^\tDescription: /               { sub(/^\tDescription: /,""); desc=$0 }
+        /node.nick = /                   { gsub(/.*node.nick = "|".*/,""); nick=$0 }
+        $0 ~ ("^[[:space:]]+\\[" dir "\\] ") {
+                                           l=$0; sub(".*\\[" dir "\\] ","",l);
+                                           pn=l; sub(/:.*/,"",pn);
+                                           pa[pn]=(index(l,"not available")>0)?0:1 }
+        /Active Port: /                  { ap=$0; sub(".*\\[" dir "\\] ","",ap); activeport=ap }
         END { flush() }
     '
 
-    # 2) Outputs hidden behind a non-active profile -------------------------
-    #    For every [Out] port whose "Part of profile(s)" line does NOT contain
-    #    the active profile, offer a profile-switch entry. Profile names contain
-    #    commas, so we match whole collected profile names as substrings rather
-    #    than splitting on commas.
-    pactl list cards | awk -v D="$DELIM" '
+    # 2) Devices hidden behind a non-active profile
+    pactl list cards | awk -v D="$DELIM" -v dir="$DIR" -v icon="$ICON" '
         function reset_card() { delete pname; delete pavail; np=0; card=""; active="" }
         /^Card #/            { reset_card() }
         /^\tName: /          { card=$2 }
-        # profile header lines: 2 tabs deep and carrying "(sinks: N"
         /^\t\t[^[]/ && /\(sinks: [0-9]/ {
                                 line=$0; sub(/^\t\t/,"",line)
-                                nm=line; sub(/: .*/,"",nm)        # name before first ": "
+                                nm=line; sub(/: .*/,"",nm)
                                 av=(index(line,"available: no")>0)?0:1
                                 np++; pname[np]=nm; pavail[np]=av
                              }
         /Active Profile: /   { sub(/.*Active Profile: /,""); active=$0 }
-        /^\t\t\[Out\] /      {
-                                line=$0; sub(/^\t\t\[Out\] /,"",line)
+        $0 ~ ("^\t\t\\[" dir "\\] ") {
+                                line=$0; sub("^\t\t\\[" dir "\\] ","",line)
                                 pdesc=line; sub(/^[^:]*: /,"",pdesc); sub(/ \(.*/,"",pdesc)
-                                # skip ports that are physically unavailable (e.g. headphone jack empty)
                                 want = (index(line,"not available")>0) ? 0 : 1
                              }
         /Part of profile\(s\): / {
@@ -134,8 +150,8 @@ build_menu() {
                                                 target=pname[i]; break
                                             }
                                         if (target!="")
-                                            printf "\xef\x80\xa6 %s (switch)%s%s%s%s%s%s%s%s\n", \
-                                                   pdesc, D, "prof", D, card, D, target, D, pdesc
+                                            printf "%s %s (switch)%s%s%s%s%s%s%s\n", \
+                                                   icon, pdesc, D, "prof", D, card, D, target, D, pdesc
                                     }
                                     want=0
                                 }
@@ -144,53 +160,46 @@ build_menu() {
 }
 
 # ---------------------------------------------------------------------------
-# Show menu
+# Show menu / act
 # ---------------------------------------------------------------------------
 menu="$(build_menu)"
-[ -z "$menu" ] && { notify -a "Audio" "No output devices found"; exit 1; }
+[ -z "$menu" ] && { notify -a "$APP" "No $NOUN devices found"; exit 1; }
 
-# strip metadata for display, keep mapping
 display="$(printf '%s\n' "$menu" | sed "s/${DELIM}.*//")"
 
-# Debug: print the raw menu (with metadata visible) and exit.
-if [ "${1:-}" = "--list" ]; then
-    printf '%s\n' "$menu" | cat -v
-    exit 0
-fi
-
-if [ "${1:-}" = "--pick" ]; then
-    # Non-interactive: match a device by substring of its label (e.g. "Speaker").
-    chosen="$(printf '%s\n' "$display" | grep -F -m1 "${2:-}")"
-elif command -v rofi >/dev/null; then
-    chosen="$(printf '%s\n' "$display" | rofi -dmenu -i -p "Output" -theme notification 2>/dev/null)"
-elif command -v wofi >/dev/null; then
-    chosen="$(printf '%s\n' "$display" | wofi --dmenu -p "Output")"
-else
-    printf '%s\n' "$display"; exit 0
-fi
+case "$ACTION" in
+list) printf '%s\n' "$menu" | cat -v; exit 0 ;;
+pick) chosen="$(printf '%s\n' "$display" | grep -F -m1 "$PICKARG")" ;;
+*)
+    if command -v rofi >/dev/null; then
+        chosen="$(printf '%s\n' "$display" | rofi -dmenu -i -p "$NOUN" -theme "$HOME/.config/rofi/audiopicker.rasi" 2>/dev/null)"
+    elif command -v wofi >/dev/null; then
+        chosen="$(printf '%s\n' "$display" | wofi --dmenu -p "$NOUN")"
+    else
+        printf '%s\n' "$display"; exit 0
+    fi
+    ;;
+esac
 
 [ -z "$chosen" ] && exit 0
 
-# Find the full (metadata-bearing) line for the chosen display text.
 line="$(printf '%s\n' "$menu" | grep -F -m1 "${chosen}${DELIM}")"
 [ -z "$line" ] && exit 0
 
-# Split metadata.
 IFS="$DELIM" read -r _disp kind a b c <<<"$line"
 
 case "$kind" in
-sink)
-    activate_sink "$a" "$chosen"
+dev)
+    activate_device "$a" "$chosen"
     ;;
 prof)
-    # a=card  b=profile  c=port-desc
-    pactl set-card-profile "$a" "$b" || { notify -a "Audio" -u critical "Profile switch failed"; exit 1; }
+    pactl set-card-profile "$a" "$b" || { notify -a "$APP" -u critical "Profile switch failed"; exit 1; }
     sleep 0.6
-    sink="$(find_sink_by_desc "$c" "$a")"
-    if [ -n "$sink" ]; then
-        activate_sink "$sink" "$c"
+    dev="$(find_device_by_desc "$c" "$a")"
+    if [ -n "$dev" ]; then
+        activate_device "$dev" "$c"
     else
-        notify -a "Audio" -u critical "Switched profile but no sink for: $c"
+        notify -a "$APP" -u critical "Switched profile but no device for: $c"
     fi
     ;;
 esac
