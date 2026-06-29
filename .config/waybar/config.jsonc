@@ -41,6 +41,8 @@
     "group/pill#right1": {
         "orientation": "inherit",
         "modules": [
+            "custom/weather",
+            "custom/hyprsunset",
             "backlight",
             "network",
             "pulseaudio",

@@ -41,8 +41,10 @@ LINKS=(
   ".config/cava            :: $CONFIG_HOME/cava"
   ".config/fastfetch       :: $CONFIG_HOME/fastfetch"
   ".config/starship        :: $CONFIG_HOME/starship"
+  ".config/yazi            :: $CONFIG_HOME/yazi"
   ".config/hyde/config.toml:: $CONFIG_HOME/hyde/config.toml"
   ".config/hyde/wallbash   :: $CONFIG_HOME/hyde/wallbash"
+  ".tmux.conf              :: $HOME/.tmux.conf"
 )
 
 info()  { printf '\033[0;34m[*]\033[0m %s\n' "$*"; }

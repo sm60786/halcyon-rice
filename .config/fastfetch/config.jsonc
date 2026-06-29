@@ -13,7 +13,11 @@ fastfetch --config hyde/*.jsonc
     "height": 18
   },
   "display": {
-    "separator": " : "
+    "separator": " : ",
+    "key": {
+      "width": 17
+    },
+    "disableLinewrap": true
   },
   "modules": [
     {
@@ -21,10 +25,6 @@ fastfetch --config hyde/*.jsonc
       "key": "  \uf10d ",
       "keyColor": "blue",
       "text": "shuf -n 1 \"${XDG_CONFIG_HOME:-$HOME/.config}/fastfetch/splash.txt\" | sed \"s/{year}/$(($(date +%Y)+1))/\""
-    },
-    {
-      "type": "custom",
-      "format": "┌──────────────────────────────────────────┐"
     },
     {
       "type": "chassis",
@@ -39,7 +39,7 @@ fastfetch --config hyde/*.jsonc
     },
     {
       "type": "kernel",
-      "key": "   Kernel",
+      "key": "  󰌽 Kernel",
       "format": "{2}",
       "keyColor": "red"
     },
@@ -56,7 +56,7 @@ fastfetch --config hyde/*.jsonc
     },
     {
       "type": "terminal",
-      "key": "   Terminal",
+      "key": "  󰆍 Terminal",
       "keyColor": "yellow"
     },
     {
@@ -65,10 +65,6 @@ fastfetch --config hyde/*.jsonc
       "format": "{2}",
       "keyColor": "yellow"
     },
-    {
-      "type": "custom",
-      "format": "└──────────────────────────────────────────┘"
-    },
     "break",
     {
       "type": "title",
@@ -76,13 +72,9 @@ fastfetch --config hyde/*.jsonc
       "format": "{6} {7} {8}"
     },
     {
-      "type": "custom",
-      "format": "┌──────────────────────────────────────────┐"
-    },
-    {
       "type": "cpu",
-      "format": "{1} @ {7}",
-      "key": "   CPU",
+      "format": "{1}",
+      "key": "  󰻛 CPU",
       "keyColor": "blue"
     },
     {
@@ -94,29 +86,25 @@ fastfetch --config hyde/*.jsonc
     {
       "type": "gpu",
       "format": "{3}",
-      "key": "   GPU Driver",
+      "key": "  󰢮 GPU Driver",
       "keyColor": "magenta"
     },
     {
       "type": "memory",
-      "key": "   Memory ",
+      "key": "  󰍛 Memory",
       "keyColor": "magenta"
     },
     {
       "type": "disk",
-      "key": "  󱦟 OS Age ",
+      "key": "  󱦟 OS Age",
       "folders": "/",
       "keyColor": "red",
       "format": "{days} days"
     },
     {
       "type": "uptime",
-      "key": "  󱫐 Uptime ",
+      "key": "  󱫐 Uptime",
       "keyColor": "red"
-    },
-    {
-      "type": "custom",
-      "format": "└──────────────────────────────────────────┘"
     },
     {
       "type": "colors",

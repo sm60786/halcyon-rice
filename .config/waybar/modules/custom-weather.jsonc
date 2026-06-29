@@ -1,0 +1,10 @@
+{
+    "custom/weather": {
+        "exec": "$XDG_CONFIG_HOME/waybar/scripts/get_weather.sh",
+        "return-type": "json",
+        "format": "{}",
+        "interval": 900,
+        "tooltip": true,
+        "on-click": "xdg-open https://wttr.in"
+    }
+}
