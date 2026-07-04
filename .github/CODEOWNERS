@@ -1,0 +1,21 @@
+# Code owners for halcyon
+# These users are automatically requested for review on matching paths.
+# Docs: https://docs.github.com/articles/about-code-owners
+
+# Default owner for everything in the repo
+*                     @sm60786
+
+# Hyprland configs & scripts
+/.config/hypr/        @sm60786
+
+# Waybar configs & scripts
+/.config/waybar/      @sm60786
+
+# Shell / terminal tooling
+/.config/zsh/         @sm60786
+/.config/yazi/        @sm60786
+/.tmux.conf           @sm60786
+
+# Repo automation & governance
+/.github/             @sm60786
+/install.sh           @sm60786
