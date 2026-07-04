@@ -27,3 +27,80 @@ jobs:
           severity: error
           scandir: '.'
           additional_files: 'install.sh'
+
+  bash-syntax:
+    name: Bash syntax
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Parse every shell script (bash -n)
+        run: |
+          set -euo pipefail
+          fail=0
+          while IFS= read -r -d '' f; do
+            if bash -n "$f"; then
+              echo "ok    $f"
+            else
+              echo "FAIL  $f"; fail=1
+            fi
+          done < <(find . -type f -name '*.sh' -print0)
+          # install.sh has no .sh-less siblings, but check it explicitly too
+          bash -n install.sh && echo "ok    install.sh"
+          exit "$fail"
+
+  desktop-files:
+    name: Desktop entries
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install validator
+        run: sudo apt-get update && sudo apt-get install -y desktop-file-utils
+      - name: Validate .desktop files
+        run: |
+          set -euo pipefail
+          shopt -s globstar nullglob
+          files=(.local/share/applications/**/*.desktop)
+          if [ ${#files[@]} -eq 0 ]; then
+            echo "No .desktop files to validate."; exit 0
+          fi
+          desktop-file-validate "${files[@]}"
+          echo "All .desktop files valid."
+
+  manifests:
+    name: Package manifests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Lint packages.txt / aur.txt
+        run: |
+          set -euo pipefail
+          rc=0
+          for f in packages.txt aur.txt; do
+            [ -f "$f" ] || { echo "missing $f"; rc=1; continue; }
+            # one package token per non-comment line
+            while IFS= read -r line; do
+              clean="${line%%#*}"
+              [ -z "$(printf '%s' "$clean" | tr -d '[:space:]')" ] && continue
+              if [ "$(printf '%s' "$clean" | wc -w)" -gt 1 ]; then
+                echo "$f: multiple tokens on a line -> '$line'"; rc=1
+              fi
+            done < "$f"
+            # no duplicate package names
+            dups="$(sed -e 's/#.*//' "$f" | awk '{print $1}' | awk 'NF' | sort | uniq -d)"
+            if [ -n "$dups" ]; then
+              echo "$f: duplicate packages ->"; echo "$dups"; rc=1
+            fi
+          done
+          [ "$rc" -eq 0 ] && echo "Manifests look good."
+          exit "$rc"
+
+  install-dry-run:
+    name: install.sh --dry-run
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run installer in dry-run (no changes)
+        run: |
+          set -euo pipefail
+          chmod +x install.sh
+          ./install.sh --dry-run
