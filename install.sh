@@ -37,6 +37,7 @@ done
 LINKS=(
   ".config/hypr            :: $CONFIG_HOME/hypr"
   ".config/kitty           :: $CONFIG_HOME/kitty"
+  ".config/mpv             :: $CONFIG_HOME/mpv"
   ".config/waybar          :: $CONFIG_HOME/waybar"
   ".config/rofi            :: $CONFIG_HOME/rofi"
   ".config/nvim            :: $CONFIG_HOME/nvim"
