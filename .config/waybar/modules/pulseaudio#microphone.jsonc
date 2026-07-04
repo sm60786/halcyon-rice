@@ -18,6 +18,7 @@
     "on-scroll-up": "hyde-shell volumecontrol -i i",
     "on-scroll-down": "hyde-shell volumecontrol -i d",
     "tooltip-format": "{format_source} {source_desc} // {source_volume}%",
-    "scroll-step": 5
+    "scroll-step": 5,
+    "smooth-scrolling-threshold": 1.0
   }
 }

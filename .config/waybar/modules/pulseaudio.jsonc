@@ -10,6 +10,7 @@
     "on-scroll-down": "hyde-shell volumecontrol -o d",
     "tooltip-format": "{icon} {desc} // {volume}%",
     "scroll-step": 5,
+    "smooth-scrolling-threshold": 1.0,
     "format-icons": {
       "headphone": "",
       "hands-free": "",

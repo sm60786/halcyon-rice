@@ -1,0 +1,29 @@
+{
+  // halcyon override of HyDE's backlight module.
+  // Adds smooth-scrolling-threshold so a touchpad swipe doesn't fire many
+  // brightness steps at once. Higher = less sensitive (needs more scroll
+  // before each step). Tune to taste.
+  "backlight": {
+    "rotate": 0,
+    "format": "{icon} {percent}%",
+    "format-icons": ["", "", "", "", "", "", "", "", ""],
+    "on-scroll-up": "hyde-shell brightnesscontrol i 5",
+    "on-scroll-down": "hyde-shell brightnesscontrol d 5",
+    "min-length": 6,
+    "tooltip": true,
+    "tooltip-format": "Backlight level: {icon} {percent}%",
+    "smooth-scrolling-threshold": 1.0
+  },
+  "backlight#intel_backlight": {
+    "device": "intel_backlight",
+    "rotate": 0,
+    "format": "{icon} {percent}%",
+    "format-icons": ["", "", "", "", "", "", "", "", ""],
+    "on-scroll-up": "hyde-shell brightnesscontrol i 5",
+    "on-scroll-down": "hyde-shell brightnesscontrol d 5",
+    "min-length": 6,
+    "tooltip": true,
+    "tooltip-format": "Backlight level: {icon} {percent}%\nUsing: intel_backlight",
+    "smooth-scrolling-threshold": 1.0
+  }
+}
