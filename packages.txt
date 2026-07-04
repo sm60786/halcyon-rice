@@ -25,6 +25,7 @@ jq
 # terminal youtube (yt-x runtime dependencies)
 yt-dlp
 mpv
+mpv-mpris
 
 # screenshot annotation
 swappy
