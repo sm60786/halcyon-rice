@@ -1,0 +1,7 @@
+# halcyon - AUR packages (need an AUR helper: paru or yay).
+#
+# Install:  ./install.sh --packages
+#      or:  paru -S --needed - < <(grep -vE '^#|^$' aur.txt)
+
+# terminal YouTube browser (yt-dlp + fzf + mpv wrapper)
+yt-x

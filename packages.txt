@@ -1,0 +1,30 @@
+# halcyon - official (pacman) packages layered on top of a HyDE base install.
+#
+# Install:  ./install.sh --packages
+#      or:  sudo pacman -S --needed - < <(grep -vE '^#|^$' packages.txt)
+#
+# (HyDE already provides Hyprland, Waybar, rofi, dunst, kitty, fonts, etc.
+#  This file lists ONLY the extras halcyon adds.)
+
+# terminal multiplexer
+tmux
+
+# terminal file manager + preview helpers
+yazi
+ffmpegthumbnailer
+poppler
+imagemagick
+chafa
+fd
+ripgrep
+fzf
+zoxide
+7zip
+jq
+
+# terminal youtube (yt-x runtime dependencies)
+yt-dlp
+mpv
+
+# screenshot annotation
+swappy
