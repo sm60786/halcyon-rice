@@ -1,0 +1,43 @@
+// Compact web-search theme — inherits wallbash colors from theme.rasi
+@import "theme.rasi"
+
+* {
+    font:             "JetBrainsMono Nerd Font 13";
+    background-color: transparent;
+    text-color:       @main-fg;
+}
+
+window {
+    width:            620px;
+    background-color: @main-bg;
+    border:           2px;
+    border-color:     @main-br;
+    border-radius:    16px;
+    padding:          18px;
+}
+
+mainbox {
+    children:         [ inputbar ];
+}
+
+inputbar {
+    children:         [ prompt, entry ];
+    padding:          10px 12px;
+    spacing:          10px;
+    background-color: @main-ex;
+    border-radius:    12px;
+}
+
+prompt {
+    text-color:       @main-fg;
+    str:              "";
+}
+
+entry {
+    placeholder:       "Search the web…";
+    placeholder-color: @main-fg;
+}
+
+listview {
+    enabled:          false;
+}
