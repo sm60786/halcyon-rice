@@ -9,6 +9,8 @@
 ![Shell](https://img.shields.io/badge/Shell-Zsh-89e051?logo=zsh&logoColor=white)
 ![License](https://img.shields.io/badge/License-GPL_3.0-blue.svg)
 
+**🚀 Installing from scratch? → [Full guide: Arch + HyDE + halcyon](docs/INSTALL-ARCH.md)**
+
 </div>
 
 ---
@@ -20,6 +22,7 @@
 - [What's included](#-whats-included)
 - [Requirements](#-requirements)
 - [Installation](#-installation)
+  - [Full install guide (Arch from scratch) ↗](docs/INSTALL-ARCH.md)
 - [Updating](#-updating)
 - [Uninstall / restore](#-uninstall--restore)
 - [Repository structure](#-repository-structure)
@@ -114,6 +117,12 @@ layout) and `hypr/nvidia.conf` (only on NVIDIA GPUs).
 ---
 
 ## 🚀 Installation
+
+> [!TIP]
+> **Starting from a blank machine?** Follow the complete, beginner-friendly
+> **[Arch + HyDE + halcyon install guide →](docs/INSTALL-ARCH.md)** (bootable USB,
+> Wi‑Fi on the CLI, `archinstall` walkthrough, HyDE, then halcyon). The steps below
+> assume you already have a working HyDE desktop.
 
 > [!IMPORTANT]
 > **When to do this:** clone and run the installer **only after you have a working
