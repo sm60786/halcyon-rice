@@ -14,6 +14,7 @@ set -euo pipefail
 
 DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}"
+DATA_HOME="${XDG_DATA_HOME:-$HOME/.local/share}"
 BACKUP_DIR="$HOME/.dotfiles-backup/$(date +%Y%m%d-%H%M%S)"
 
 DRY_RUN=false
@@ -45,6 +46,9 @@ LINKS=(
   ".config/hyde/config.toml:: $CONFIG_HOME/hyde/config.toml"
   ".config/hyde/wallbash   :: $CONFIG_HOME/hyde/wallbash"
   ".tmux.conf              :: $HOME/.tmux.conf"
+  # App-launcher entries (linked individually so other .desktop files are untouched)
+  ".local/share/applications/tmux.desktop :: $DATA_HOME/applications/tmux.desktop"
+  ".local/share/applications/yt-x.desktop :: $DATA_HOME/applications/yt-x.desktop"
 )
 
 info()  { printf '\033[0;34m[*]\033[0m %s\n' "$*"; }
