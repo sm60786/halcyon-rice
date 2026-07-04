@@ -88,6 +88,13 @@ Just go **top‑to‑bottom**. Pick the values below; anything not listed can st
 default. The goal is a **minimal** base — **no desktop** — because HyDE installs the
 desktop later.
 
+> **NB:** `archinstall` changes between releases, so menu **names, order, and wording may
+> differ** from this table, and the best choices can vary with **your hardware** (GPU,
+> UEFI vs BIOS, disk layout, laptop vs desktop). Treat this as a guide, not gospel —
+> match the *intent* of each row rather than the exact label. When in doubt, the
+> [Arch install guide](https://wiki.archlinux.org/title/Installation_guide) and
+> [archinstall wiki](https://wiki.archlinux.org/title/Archinstall) are the source of truth.
+
 | # | Menu item | Pick this | Why |
 |---|---|---|---|
 | 1 | **Archinstall language** | English | Installer's own language |
