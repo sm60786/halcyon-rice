@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=yt-x
+GenericName=Terminal YouTube Browser
+Comment=Browse and watch YouTube from the terminal (yt-dlp + fzf + mpv)
+Icon=youtube
+Exec=kitty yt-x
+Terminal=false
+Categories=AudioVideo;Video;Player;Network;
+Keywords=youtube;video;yt-dlp;mpv;stream;
