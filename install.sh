@@ -7,6 +7,7 @@
 #
 # Usage:
 #   ./install.sh            # link everything
+#   ./install.sh --packages # also install packages (packages.txt + aur.txt) & TPM
 #   ./install.sh --dry-run  # show what would happen, change nothing
 #   ./install.sh --force    # overwrite existing symlinks without backup
 
@@ -19,11 +20,13 @@ BACKUP_DIR="$HOME/.dotfiles-backup/$(date +%Y%m%d-%H%M%S)"
 
 DRY_RUN=false
 FORCE=false
+DO_PACKAGES=false
 for arg in "$@"; do
   case "$arg" in
-    --dry-run) DRY_RUN=true ;;
-    --force)   FORCE=true ;;
-    -h|--help) sed -n '2,12p' "$0"; exit 0 ;;
+    --dry-run)  DRY_RUN=true ;;
+    --force)    FORCE=true ;;
+    --packages) DO_PACKAGES=true ;;
+    -h|--help)  sed -n '2,13p' "$0"; exit 0 ;;
     *) echo "Unknown option: $arg" >&2; exit 1 ;;
   esac
 done
@@ -63,6 +66,44 @@ run() {
   fi
 }
 
+# Read a package list file: drop comments (full-line and inline) and blanks,
+# keep the first token of each line (the package name).
+strip_list() { sed -e 's/#.*//' "$1" | awk '{print $1}' | awk 'NF'; }
+
+install_packages() {
+  local pac="$DOTFILES_DIR/packages.txt"
+  local aur="$DOTFILES_DIR/aur.txt"
+  local helper=""
+
+  if [[ -f "$pac" ]]; then
+    info "Installing official packages (packages.txt)"
+    # shellcheck disable=SC2046 # intentional word-splitting into package args
+    run sudo pacman -S --needed $(strip_list "$pac")
+  else
+    warn "no packages.txt found; skipping official packages"
+  fi
+
+  for h in paru yay; do command -v "$h" >/dev/null 2>&1 && { helper="$h"; break; }; done
+  if [[ -f "$aur" ]]; then
+    if [[ -n "$helper" ]]; then
+      info "Installing AUR packages ($helper, aur.txt)"
+      # shellcheck disable=SC2046 # intentional word-splitting into package args
+      run "$helper" -S --needed $(strip_list "$aur")
+    else
+      warn "no AUR helper (paru/yay) found; skipping aur.txt"
+      warn "install one first, e.g.: git clone https://aur.archlinux.org/yay.git && cd yay && makepkg -si"
+    fi
+  fi
+
+  # tmux plugin manager (needed by ~/.tmux.conf)
+  if [[ -d "$HOME/.tmux/plugins/tpm" ]]; then
+    ok "tpm already present"
+  else
+    info "Bootstrapping tmux plugin manager (TPM)"
+    run git clone --depth 1 https://github.com/tmux-plugins/tpm "$HOME/.tmux/plugins/tpm"
+  fi
+}
+
 link_one() {
   local src="$1" dest="$2"
   local abs_src="$DOTFILES_DIR/$src"
@@ -97,6 +138,11 @@ link_one() {
 info "Dotfiles: $DOTFILES_DIR"
 info "Config home: $CONFIG_HOME"
 $DRY_RUN && warn "DRY RUN - no changes will be made"
+
+if $DO_PACKAGES; then
+  install_packages
+  echo
+fi
 
 for entry in "${LINKS[@]}"; do
   src="${entry%%::*}"; dest="${entry##*::}"
