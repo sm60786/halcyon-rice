@@ -84,27 +84,35 @@ pacman -Sy archlinux-keyring
 archinstall
 ```
 
-Work through the menu top‑to‑bottom. Recommended choices for a **minimal** base that
-HyDE will build on:
+Just go **top‑to‑bottom**. Pick the values below; anything not listed can stay at its
+default. The goal is a **minimal** base — **no desktop** — because HyDE installs the
+desktop later.
 
-| Menu option | Recommended choice |
-|---|---|
-| **Archinstall language** | English |
-| **Mirrors / region** | Your country (faster downloads) |
-| **Locales** | Keyboard + language to taste (`en_US.UTF-8` is safe) |
-| **Disk configuration** | *Best-effort default* → select disk → **wipe** → filesystem **ext4** (or **btrfs** for snapshots) |
-| **Disk encryption** | Optional (LUKS) — skip if unsure |
-| **Bootloader** | **systemd-boot** (UEFI) or GRUB |
-| **Swap** | On (zram) |
-| **Hostname** | e.g. `arch` |
-| **Root password** | set one |
-| **User account** | create your user, tick **"is superuser / sudo"** |
-| **Profile** | **Minimal** ← *no desktop environment; HyDE installs the desktop later* |
-| **Audio** | **Pipewire** |
-| **Kernels** | **`linux-lts`** (stable, recommended primary) — optionally also tick `linux` as a fallback |
-| **Network configuration** | **NetworkManager** ← important, HyDE/Wi‑Fi rely on it |
-| **Additional packages** | `git base-devel wget nano` (minimal helpers) |
-| **Timezone** | your zone |
+| # | Menu item | Pick this | Why |
+|---|---|---|---|
+| 1 | **Archinstall language** | English | Installer's own language |
+| 2 | **Locales** | Keyboard `us`, Language `en_US.UTF-8` | Standard, safe |
+| 3 | **Mirrors** | Your **region/country** | Much faster downloads |
+| 4 | **Disk configuration** | **Partitioning → Best‑effort default** → pick disk → **wipe** | Auto, sensible layout |
+| 5 | ↳ **Filesystem** | **ext4** (simple) or **btrfs** (snapshots) | ext4 = fewest surprises |
+| 6 | **Disk encryption** | **Skip** (or LUKS on a laptop you carry) | LUKS = password every boot |
+| 7 | **Bootloader** | **systemd‑boot** | Clean & simple on UEFI |
+| 8 | **Swap** | **On (zram)** | Compressed RAM swap |
+| 9 | **Hostname** | `arch` (anything) | Machine name |
+| 10 | **Root password** | set one | Admin account |
+| 11 | **User account** | create your user → **superuser (sudo) = Yes** | Your daily login |
+| 12 | **Profile** | **Minimal** ⚠️ | *No desktop* — HyDE adds Hyprland later |
+| 13 | **Audio** | **Pipewire** | What HyDE expects |
+| 14 | **Kernels** | **`linux`** (+ optionally `linux-lts` fallback) | Newer kernel = better Hyprland/GPU |
+| 15 | **Network configuration** | **NetworkManager** ⚠️ | HyDE/Wi‑Fi rely on it — don't skip |
+| 16 | **Additional packages** | `git base-devel wget nano openssh` | Helpers for the next steps |
+| 17 | **Additional repositories** | Enable **multilib** | 32‑bit support (Steam, some AUR) |
+| 18 | **Timezone** | your zone (e.g. `Asia/Kolkata`) | Correct local time |
+| 19 | **Automatic time sync (NTP)** | **Enabled** | Keeps the clock correct |
+
+> **NVIDIA GPU?** With the **Minimal** profile, archinstall won't ask about graphics
+> drivers — that's expected. **HyDE's installer handles GPU/NVIDIA drivers** afterward,
+> and halcyon's `nvidia.conf` then tunes Hyprland for it.
 
 Then select **Install**. When it finishes, decline the chroot prompt (or `exit`), then:
 
@@ -197,7 +205,9 @@ Reload Hyprland (`Super + Shift + R`) or log out/in.
 iwctl                      # connect Wi-Fi (station <dev> connect "SSID")
 timedatectl set-ntp true
 pacman -Sy archlinux-keyring
-archinstall                # Profile=Minimal, Network=NetworkManager, Audio=Pipewire
+archinstall                # Profile=Minimal, Network=NetworkManager, Audio=Pipewire,
+                           # Kernel=linux, multilib=on, NTP=on
+
 reboot
 
 # --- first boot ---
