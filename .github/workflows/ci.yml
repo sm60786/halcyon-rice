@@ -1,0 +1,29 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main, development]
+
+permissions:
+  contents: read
+
+jobs:
+  shellcheck:
+    name: ShellCheck
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run ShellCheck
+        uses: ludeeus/action-shellcheck@master
+        env:
+          # Follow `source`d files where possible; ignore ones we can't resolve in CI.
+          SHELLCHECK_OPTS: -x
+        with:
+          # Start lenient: only hard errors fail the build. Tighten to "warning"
+          # or "style" later once the scripts are clean.
+          severity: error
+          scandir: '.'
+          additional_files: 'install.sh'
