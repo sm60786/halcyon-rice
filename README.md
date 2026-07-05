@@ -252,6 +252,12 @@ halcyon/
 - **Themes/wallpapers:** managed by HyDE — use `hyde-shell` / the HyDE theme picker
   rather than editing `~/.config/hyde/themes/` by hand.
 
+> [!TIP]
+> Want a full map of every config file and what each setting does? Open
+> **[docs/config-map.html](docs/config-map.html)** in a browser — an interactive tree
+> of the whole `.config` with per-setting notes (what it controls + the impact of
+> changing it) for the files halcyon owns/tunes.
+
 ---
 
 ## 🩹 Troubleshooting

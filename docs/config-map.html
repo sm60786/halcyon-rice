@@ -1,0 +1,432 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>halcyon · .config map</title>
+<style>
+  :root{
+    --bg:#0d1117; --panel:#161b22; --panel2:#1c232c; --border:#30363d;
+    --fg:#e6edf3; --muted:#8b949e; --accent:#58a6ff;
+    --halcyon:#f0883e; --hyde:#a371f7; --script:#3fb950; --warn:#d29922;
+    --mono:'JetBrains Mono','CaskaydiaCove Nerd Font Mono',ui-monospace,monospace;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%}
+  body{background:var(--bg);color:var(--fg);font:14px/1.55 -apple-system,Segoe UI,Roboto,sans-serif;display:flex;flex-direction:column}
+  header{padding:10px 16px;border-bottom:1px solid var(--border);display:flex;gap:14px;align-items:center;flex-wrap:wrap;background:var(--panel)}
+  header h1{font-size:16px;margin:0;font-family:var(--mono)}
+  header .sub{color:var(--muted);font-size:12px}
+  .search{flex:1;min-width:180px;max-width:360px}
+  .search input{width:100%;background:var(--bg);color:var(--fg);border:1px solid var(--border);border-radius:6px;padding:6px 10px;font:inherit}
+  .legend{display:flex;gap:12px;font-size:12px;color:var(--muted)}
+  .badge{display:inline-block;padding:1px 7px;border-radius:10px;font-size:11px;font-weight:600;font-family:var(--mono)}
+  .b-halcyon{background:#3a2616;color:var(--halcyon);border:1px solid #5a3a1e}
+  .b-hyde{background:#2a2140;color:var(--hyde);border:1px solid #42306b}
+  .b-script{background:#143b1d;color:var(--script);border:1px solid #1f5a2a}
+  main{flex:1;display:grid;grid-template-columns:340px 1fr;min-height:0}
+  #tree{overflow:auto;border-right:1px solid var(--border);padding:8px 6px;background:var(--panel)}
+  #detail{overflow:auto;padding:20px 26px}
+  .dir{margin:2px 0}
+  .dir > .label{cursor:pointer;padding:3px 6px;border-radius:6px;display:flex;align-items:center;gap:6px;color:var(--fg);user-select:none}
+  .dir > .label:hover{background:var(--panel2)}
+  .dir > .label .caret{width:10px;color:var(--muted);font-size:10px}
+  .dir.collapsed > .children{display:none}
+  .dir.collapsed > .label .caret::before{content:'▸'}
+  .dir > .label .caret::before{content:'▾'}
+  .children{margin-left:14px;border-left:1px dashed var(--border);padding-left:6px}
+  .file{cursor:pointer;padding:3px 6px;border-radius:6px;display:flex;align-items:center;gap:8px;white-space:nowrap}
+  .file:hover{background:var(--panel2)}
+  .file.active{background:#1f2a3a;outline:1px solid var(--accent)}
+  .file .name{font-family:var(--mono);font-size:12.5px;overflow:hidden;text-overflow:ellipsis}
+  .file .mini{font-size:9px;padding:0 5px;border-radius:8px}
+  .pathbar{font-family:var(--mono);font-size:12px;color:var(--muted);margin-bottom:14px;word-break:break-all}
+  h2{margin:0 0 4px;font-size:18px}
+  .purpose{color:var(--muted);margin:0 0 18px;max-width:80ch}
+  .callout{background:var(--panel2);border:1px solid var(--border);border-left:3px solid var(--warn);padding:10px 14px;border-radius:6px;margin:0 0 18px;max-width:80ch;font-size:13px}
+  table{border-collapse:collapse;width:100%;max-width:1100px;font-size:13px}
+  th,td{text-align:left;border:1px solid var(--border);padding:8px 10px;vertical-align:top}
+  th{background:var(--panel2);color:var(--muted);font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.04em}
+  td.param{font-family:var(--mono);color:var(--accent);white-space:nowrap}
+  td.val{font-family:var(--mono);color:var(--halcyon);white-space:pre-wrap}
+  tr:nth-child(even) td{background:rgba(255,255,255,.015)}
+  .section{font-family:var(--mono);color:var(--muted);font-size:12px;margin:26px 0 10px;border-bottom:1px solid var(--border);padding-bottom:4px}
+  .empty{color:var(--muted);font-style:italic}
+  .kbd{font-family:var(--mono);background:var(--panel2);border:1px solid var(--border);border-radius:4px;padding:1px 6px;font-size:12px}
+  mark{background:#3d2a00;color:var(--warn);border-radius:3px}
+  @media(max-width:820px){main{grid-template-columns:1fr}#tree{max-height:38vh}}
+</style>
+</head>
+<body>
+<header>
+  <h1>halcyon · .config map</h1>
+  <span class="sub">every tracked config file · what each setting controls &amp; the impact of changing it</span>
+  <div class="search"><input id="q" placeholder="Filter files / settings / keys…" autocomplete="off"></div>
+  <div class="legend">
+    <span class="badge b-halcyon">halcyon</span>
+    <span class="badge b-hyde">HyDE</span>
+    <span class="badge b-script">script</span>
+  </div>
+</header>
+<main>
+  <nav id="tree"></nav>
+  <section id="detail"><p class="empty">Pick a file on the left, or search above. halcyon-owned files show a per-setting table; HyDE-managed files show their purpose + why we don't edit them.</p></section>
+</main>
+
+<!--
+  DATA: each entry = one tracked file under .config (+ ~/.tmux.conf, .config/mpv).
+  owner: halcyon | hyde | script
+  purpose: short
+  note (optional): callout
+  settings (optional): [{p:value, c:controls, i:impact}]
+  Add a file = add an entry. Keep the JSON valid (trailing commas not allowed).
+-->
+<script type="application/json" id="config-data">
+[
+ {"path":".config/cava/config","owner":"hyde","purpose":"Audio visualizer (bar/spectrum) config; HyDE wallbash rewrites colors. Owned by HyDE."},
+ {"path":".config/cava/shaders/bar_spectrum.frag","owner":"hyde","purpose":"GLSL fragment shader for cava spectrum bars."},
+ {"path":".config/cava/shaders/eye_of_phi.frag","owner":"hyde","purpose":"Cava shader preset."},
+ {"path":".config/cava/shaders/northern_lights.frag","owner":"hyde","purpose":"Cava shader preset."},
+ {"path":".config/cava/shaders/pass_through.vert","owner":"hyde","purpose":"Pass-through vertex shader used by all cava shaders."},
+ {"path":".config/cava/shaders/spectrogram.frag","owner":"hyde","purpose":"Cava spectrogram shader."},
+ {"path":".config/cava/shaders/winamp_line_style_spectrum.frag","owner":"hyde","purpose":"Cava Winamp-style line shader."},
+ {"path":".config/cava/themes/solarized_dark","owner":"hyde","purpose":"Cava color theme preset."},
+ {"path":".config/cava/themes/tricolor","owner":"hyde","purpose":"Cava color theme preset."},
+
+ {"path":".config/dunst/dunst.conf","owner":"hyde","purpose":"Notification daemon config (HyDE-managed; wallbash rewrites colors)."},
+ {"path":".config/dunst/dunstrc","owner":"hyde","purpose":"Dunst runtime config / rules."},
+
+ {"path":".config/fastfetch/config.jsonc","owner":"halcyon","purpose":"System info shown in kitty on demand (we removed the auto-greet). Tuned for Nerd Font icons + aligned values.",
+  "settings":[
+   {"p":"logo.source","c":"Where the ASCII/nerd logo comes from","i":"Uses HyDE's fastfetch.sh logo picker. Change to a fixed path for a static logo."},
+   {"p":"logo.height","c":"Vertical space reserved for the logo","i":"Raise if the logo is clipped; lower to tighten the fetch block."},
+   {"p":"display.separator","c":"String between the key and the value","i":"' : ' gives 'OS : Arch'. Change to ': ' or '  ' for a different look."},
+   {"p":"display.key.width","c":"Column width reserved for the left labels","i":"17 keeps all icons+labels aligned. Lower = ragged left edge when labels differ in length; higher = more whitespace."},
+   {"p":"display.disableLinewrap","c":"Stop fastfetch from wrapping long lines","i":"true prevents layout breakage in narrow terminals. Turn off only on wide terminals."},
+   {"p":"modules[].key (icons)","c":"The Nerd Font glyph shown for each line","i":"Render as boxes? You need a Nerd Font (CaskaydiaCove/JetBrainsMono) resolved by fontconfig. We disabled conflicting web .woff fonts to fix this."},
+   {"p":"modules[].keyColor","c":"Color of each label","i":"Per-line color (red/blue/green…). Driven by wallbash normally; override here for a fixed palette."},
+   {"p":"splash.txt + command module","c":"Random one-liner at the top","i":"Picks a line from splash.txt with {year} replaced. Edit splash.txt to change the quips."}
+  ]},
+ {"path":".config/fastfetch/logo/*.icon","owner":"hyde","purpose":"ASCII logo assets used by the logo picker (multiple files)."},
+ {"path":".config/fastfetch/splash.txt","owner":"halcyon","purpose":"Pool of random splash lines shown above the fetch. Edit freely."},
+
+ {"path":".config/hyde/config.toml","owner":"hyde","purpose":"HyDE framework settings (wallbash engine, shader compile path, etc.). Touch only if you know HyDE internals."},
+ {"path":".config/hyde/wallbash/README.md","owner":"hyde","purpose":"Notes on the wallbash color-template system."},
+ {"path":".config/hyde/wallbash/always/*.dcol","owner":"hyde","purpose":"Per-app wallbash color templates (cava, chrome, discord, spotify, vim) regenerated from the wallpaper."},
+ {"path":".config/hyde/wallbash/scripts/*.sh","owner":"hyde","purpose":"HyDE wallbash apply scripts (cava/chrome/code/discord/spotify) — run on wallpaper change."},
+
+ {"path":".config/hypr/userprefs.conf","owner":"halcyon","purpose":"Your personal Hyprland overrides — the main file we tune. Layers on top of HyDE's hyprland.conf. Hyprland live-reloads on save.",
+  "settings":[
+   {"p":"misc.allow_session_lock_restore","c":"Re-enable hyprlock after resume","i":"1 = lock screen returns after sleep. 0 = no auto-lock on resume."},
+   {"p":"cursor.no_hardware_cursors","c":"Use software cursors","i":"true fixes cursor visibility on some NVIDIA/DRM setups. false = hardware cursors (lower latency, can glitch)."},
+   {"p":"cursor.hide_on_key_press","c":"Hide cursor while typing","i":"false = cursor stays visible while typing. true hides it (laptop habit)."},
+   {"p":"input.follow_mouse","c":"Which window receives focus based on cursor","i":"1 = focus follows mouse into the window under it. 0 = click-to-focus only."},
+   {"p":"input.touchpad.natural_scroll","c":"Scroll direction","i":"no = trackpad scroll moves content the 'old' way. yes = 'natural' (like a touchscreen)."},
+   {"p":"input.touchpad.scroll_factor","c":"Pixels scrolled per swipe unit","i":"0.2 = very gentle (we lowered for precision). 1.0 = default. Raise to scroll faster."},
+   {"p":"input.touchpad.tap-to-click","c":"Tap (no press) = click","i":"yes = 1-finger tap left, 2-finger tap right, 3-finger tap middle (closes tabs). no = must press the pad."},
+   {"p":"general.gaps_out","c":"Outer gaps: top, right, bottom, left","i":"'2, 8, 8, 8' pulls windows close under Waybar (small top gap). Raise top for more breathing room."},
+   {"p":"exec-once nm-applet / keyring / polkit","c":"Startup daemons (network, secrets, auth)","i":"Run once at login. Removing breaks the network tray / saved passwords / sudo prompts."},
+   {"p":"exec-once nmcli wifi off/on","c":"WiFi reset ~5s after login","i":"Fixes 'no Wi-Fi after reboot'. Safe to remove if your driver connects cleanly."},
+   {"p":"exec-once auto-sunset.sh","c":"Start the time-of-day night-light daemon","i":"Warm evenings, neutral days via HyDE hyprsunset. Remove to disable auto warmth."},
+   {"p":"bindd Super+Shift+B","c":"Reading mode (paper shader) toggle","i":"Runs reading-mode.sh → flips HyDE's paper.frag screen shader. No impact unless toggled."},
+   {"p":"bindd Super+Ctrl+G","c":"Rofi web search","i":"rofi-search.sh → Google in default browser. pkill toggles it closed."},
+   {"p":"bindd Super+E","c":"Open yazi (terminal file manager)","i":"unbinds HyDE's GUI explorer first. Change to your preferred file manager command."},
+   {"p":"bindd Super+Y","c":"Open yt-x (terminal YouTube)","i":"kitty yt-x. Requires yt-x + yt-dlp + mpv (see packages.txt)."}
+  ]},
+ {"path":".config/hypr/animations.conf","owner":"hyde","purpose":"Active animation preset selector (sources one of animations/*.conf)."},
+ {"path":".config/hypr/animations/*.conf","owner":"hyde","purpose":"Animation presets (LimeFrenzy, classic, diablo, dynamic, fast, minimal, etc.). Pick via HyDE menu."},
+ {"path":".config/hypr/hypridle.conf","owner":"hyde","purpose":"Idle daemon (auto-lock/sleep timeouts)."},
+ {"path":".config/hypr/hyprland.conf","owner":"hyde","purpose":"HyDE's main Hyprland entry config — sources userprefs, keybindings, etc. Generally don't hand-edit; HyDE regenerates parts of it."},
+ {"path":".config/hypr/hyprlock.conf","owner":"hyde","purpose":"Active lockscreen preset selector."},
+ {"path":".config/hypr/hyprlock/*.conf","owner":"hyde","purpose":"Lockscreen presets (Anurati, HyDE, greetd, theme, etc.)."},
+ {"path":".config/hypr/keybindings.conf","owner":"hyde","purpose":"HyDE's keybind set (Super+T terminal, Super+X resize, etc.). We add our own in userprefs.conf to avoid editing this."},
+ {"path":".config/hypr/monitors.conf","owner":"hyde","purpose":"Display layout (resolution, position, scale, transform). MACHINE-SPECIFIC — edit per device via hyprctl monitors."},
+ {"path":".config/hypr/nvidia.conf","owner":"hyde","purpose":"NVIDIA-specific Hyprland env vars (nvidia_drm, fb666, etc.). Only active on NVIDIA GPUs."},
+ {"path":".config/hypr/pyprland.toml","owner":"hyde","purpose":"Pyprland (dropdown terminal, scratchpads) config."},
+ {"path":".config/hypr/scripts/auto-sunset.sh","owner":"script","purpose":"Daemon: warm screen in evening, neutral by day — layered on HyDE hyprsunset. Respects manual Waybar toggles in between.",
+  "settings":[
+   {"p":"day_temp / evening_temp","c":"Color temperature (Kelvin)","i":"6500 day / 4000 evening. Lower evening = warmer (more orange). 3000 = candlelight."},
+   {"p":"evening_hour / morning_hour","c":"When warmth switches (24h)","i":"18 = warm from 6pm; 7 = neutral from 7am. Adjust to your sunset/sleep schedule."},
+   {"p":"sleep 300","c":"Poll interval (seconds)","i":"Checks the clock every 5 min. Lower = snappier transitions, more CPU; higher = coarser."},
+   {"p":"state_file","c":"Remembers current period so it only acts on transitions","i":"Deleting it forces a re-apply on next loop. Safe to remove."}
+  ]},
+ {"path":".config/hypr/scripts/reading-mode.sh","owner":"script","purpose":"Toggles HyDE's paper.frag screen shader (e-ink look) for reading. Survives theme reloads because it uses HyDE's shader pipeline.",
+  "settings":[
+   {"p":"conf=shaders.conf","c":"Where $SCREEN_SHADER lives","i":"Reads/toggles the value in shaders.conf via sed. Don't change the path unless HyDE moves it."},
+   {"p":"hyde-shell shaders.sh --reload","c":"Applies the new shader","i":"How HyDE picks up the change. Without it the shader wouldn't switch."},
+   {"p":"notify-send -r 20","c":"On-screen confirmation","i":"-r 20 replaces the same notification (no spam). -t 1200 = 1.2s."}
+  ]},
+ {"path":".config/hypr/scripts/rofi-search.sh","owner":"script","purpose":"Rofi web-search box → opens query in default browser (Google).",
+  "settings":[
+   {"p":"pgrep toggle","c":"If rofi is open, close it","i":"Pressing the keybind again dismisses rofi instead of stacking."},
+   {"p":"sed 's/ /+/g'","c":"URL-encode spaces","i":"Simple space→+ encoding; browsers handle the rest. For DuckDuckGo, swap the xdg-open URL."}
+  ]},
+ {"path":".config/hypr/shaders.conf","owner":"halcyon","purpose":"HyDE-controlled screen shader selector. We don't edit by hand — reading-mode.sh rewrites it.",
+  "settings":[
+   {"p":"$SCREEN_SHADER","c":"Active shader name","i":"'disable' = none; 'paper' = reading mode. Toggle via Super+Shift+B, not manual edits."},
+   {"p":"$SCREEN_SHADER_PATH","c":"Path to the .frag file","i":"Must match $SCREEN_SHADER. HyDE compiles this to the cache path below."},
+   {"p":"$SCREEN_SHADER_COMPILED","c":"Compiled GLSL cache path","i":"Override only in hyde/config.toml if you know why."}
+  ]},
+ {"path":".config/hypr/themes/colors.conf","owner":"hyde","purpose":"Active wallbash color palette (regenerated from wallpaper)."},
+ {"path":".config/hypr/themes/theme.conf","owner":"hyde","purpose":"Active Hyprland theme selector."},
+ {"path":".config/hypr/themes/wallbash.conf","owner":"hyde","purpose":"Wallbash theme bridge."},
+ {"path":".config/hypr/windowrules.conf","owner":"hyde","purpose":"HyDE window rules (floats, opacity, workspaces). Add custom rules here or in userprefs."},
+ {"path":".config/hypr/workflows.conf","owner":"hyde","purpose":"Active workflow selector."},
+ {"path":".config/hypr/workflows/*.conf","owner":"hyde","purpose":"Workflow presets (default, editing, gaming, powersaver, snappy)."},
+ {"path":".config/hypr/workspaces.conf","owner":"hyde","purpose":"Workspace layout/behavior."},
+
+ {"path":".config/kitty/kitty.conf","owner":"halcyon","purpose":"Terminal config. Pulls HyDE theming via include hyde.conf; we only add tab styling + shell.",
+  "settings":[
+   {"p":"shell","c":"Which shell kitty launches","i":"/usr/bin/zsh (no login flag). Use 'zsh -l' if you need /etc/profile sourcing."},
+   {"p":"include hyde.conf","c":"HyDE theme/font bridge","i":"Provides wallbash colors + the Nerd Font. Removing breaks theming."},
+   {"p":"tab_bar_style / tab_powerline_style","c":"Tab bar look","i":"powerline + slanted = the angled tabs. 'separator' or 'hidden' for simpler."},
+   {"p":"tab_title_template","c":"What each tab shows","i":"Title, plus ' :N' only when a tab has >1 window. Edit the template to rename."},
+   {"p":"(commented) latency block","c":"input_delay / repaint_delay","i":"Uncomment for lower latency at higher energy use."}
+  ]},
+ {"path":".config/kitty/hyde.conf","owner":"hyde","purpose":"HyDE-generated kitty theme/font include (wallbash colors, Nerd Font). Don't hand-edit — regenerated."},
+ {"path":".config/kitty/theme.conf","owner":"hyde","purpose":"Kitty theme include."},
+
+ {"path":".config/nvim/","owner":"hyde","purpose":"LazyVim distribution (init.lua, lua/config/*, lua/plugins/*). Standard LazyVim — edit your own plugins under lua/plugins/."},
+
+ {"path":".config/rofi/audiopicker.rasi","owner":"hyde","purpose":"Rofi theme for HyDE's audio device picker."},
+ {"path":".config/rofi/search.rasi","owner":"halcyon","purpose":"Rofi theme for our web-search box (Super+Ctrl+G). Imports theme.rasi for colors.",
+  "settings":[
+   {"p":"@import \"theme.rasi\"","c":"Inherits wallbash colors","i":"Keeps the search box themed automatically. Point at another .rasi for a custom look."},
+   {"p":"font","c":"Input font + size","i":"JetBrainsMono Nerd Font 13. Change size for a bigger/smaller prompt."},
+   {"p":"inputbar / prompt / entry","c":"Layout of the search row","i":"Spacing, padding, icon color. Tweak for visual fit with your bar."}
+  ]},
+ {"path":".config/rofi/theme.rasi","owner":"hyde","purpose":"Active rofi theme (wallbash-driven). Other .rasi files import this."},
+
+ {"path":".config/starship/starship.toml","owner":"halcyon","purpose":"Shell prompt. Single-line dir+git on the left; language/runtime info on the right.",
+  "settings":[
+   {"p":"add_newline","c":"Blank line before the prompt","i":"false = compact. true = more vertical separation between commands."},
+   {"p":"format (left)","c":"What shows on the primary line","i":"OS glyph, directory, git branch/commit/state/status. Reorder modules to change layout."},
+   {"p":"right_format","c":"Right-aligned modules","i":"Language versions (go, rust, python, node…), k8s, cloud, time. Remove ones you don't use to speed rendering."},
+   {"p":"[directory] truncate_to_repo","c":"Shorten path to the git root","i":"false = always show full path. true = collapse to repo-relative."},
+   {"p":"[git_status] ahead/behind/diverged","c":"Push/pull arrows","i":"⇡⇣ glyphs with counts. Edit the format string for different symbols."},
+   {"p":"[time] time_format","c":"Clock on the right","i":"%R = HH:MM. %T = HH:MM:SS. Disable with disabled=true."},
+   {"p":"per-language [xxx] blocks","c":"Symbol + style per runtime","i":"Most are italic label + colored symbol. Safe to delete languages you never use."}
+  ]},
+
+ {"path":".config/waybar/config.jsonc","owner":"hyde","purpose":"AUTO-GENERATED by HyDE's wbarconfgen from the active layout. Don't edit — it gets overwritten. Edit layouts/halcyon.jsonc instead."},
+ {"path":".config/waybar/layouts/halcyon.jsonc","owner":"halcyon","purpose":"Our user-owned Waybar layout (highest priority in HyDE's lookup). This is what generates config.jsonc. Where we add modules.",
+  "settings":[
+   {"p":"layer / output / height","c":"Bar placement","i":"top layer on all outputs, height 10. Change height to resize the bar."},
+   {"p":"include (modules/* + includes.json)","c":"Pulls every module definition","i":"Glob include — drop a new module .jsonc in modules/ and it's picked up."},
+   {"p":"modules-left / center / right (pill groups)","c":"Which modules show and where","i":"We added custom/weather + custom/hyprsunset to right1. Reorder arrays to move modules."},
+   {"p":"group/pill#* orientation","c":"How grouped modules stack","i":"'inherit' = follow bar orientation (horizontal). Change to 'vertical' for stacked pills."}
+  ]},
+ {"path":".config/waybar/layouts/backup/*.jsonc","owner":"hyde","purpose":"Timestamped backups of previous layouts (auto). Reference only."},
+ {"path":".config/waybar/modules/pulseaudio.jsonc","owner":"halcyon","purpose":"Volume module override. Adds scroll-sensitivity control.",
+  "settings":[
+   {"p":"on-scroll-up/down","c":"Command per scroll step","i":"hyde-shell volumecontrol -o i/d (increase/decrease output). Ignored when set; scroll-step is moot."},
+   {"p":"scroll-step","c":"(Inert when on-scroll-* is set)","i":"Only used by built-in scrolling; our command handles steps. Kept for parity."},
+   {"p":"smooth-scrolling-threshold","c":"Scroll delta needed for one step","i":"1.0 = quick but not frantic on a touchpad. Raise (2-3) = slower; lower (0.5) = faster."},
+   {"p":"on-click / on-click-middle","c":"Open pavucontrol / mute","i":"Left = pavucontrol tab 3; middle = mute toggle."}
+  ]},
+ {"path":".config/hypr/scripts/rofi-search.sh::note","owner":"script","purpose":"(see hypr/scripts entry)"},
+ {"path":".config/waybar/modules/pulseaudio#microphone.jsonc","owner":"halcyon","purpose":"Mic volume module override. Scroll threshold + tunable icon/value gap.",
+  "settings":[
+   {"p":"format-source","c":"Icon + value layout","i":"\\uf130 + thin-space + {volume}%. The \\u2009 space is the GAP KNOB — widen/narrow by swapping the space code."},
+   {"p":"smooth-scrolling-threshold","c":"Scroll sensitivity","i":"1.0 like the output module. Keep both in sync for consistent feel."},
+   {"p":"on-click-right","c":"Input device picker","i":"audiopicker.sh --input. Change to your own picker if desired."}
+  ]},
+ {"path":".config/waybar/modules/backlight.jsonc","owner":"halcyon","purpose":"Brightness module override. Scroll threshold + bigger step (we raised from 1% to 5%).",
+  "settings":[
+   {"p":"on-scroll-up/down","c":"Brightness step command","i":"brightnesscontrol i/d 5 = ±5% per step. Raise the number for coarser control; lower for fine."},
+   {"p":"smooth-scrolling-threshold","c":"Scroll delta per step","i":"1.0. Pair with the step size above to tune overall speed."},
+   {"p":"min-length","c":"Minimum module width","i":"6 stops the bar from jittering as the % changes width."}
+  ]},
+ {"path":".config/waybar/modules/custom-hyprsunset.jsonc","owner":"halcyon","purpose":"Color-temperature module override. Scroll threshold + right-click preset menu.",
+  "settings":[
+   {"p":"on-scroll-up/down","c":"Warmer / cooler by step","i":"hyprsunset -i/-d. Threshold gates how fast it moves."},
+   {"p":"smooth-scrolling-threshold","c":"Scroll sensitivity","i":"1.0. Raise to slow the temperature sweep."},
+   {"p":"menu / menu-actions","c":"Right-click preset menu","i":"Named temperature presets (warm-candle 3000 → arctic-blue 10000) + gamma presets. Edit values to add your own."},
+   {"p":"signal: 19","c":"Update signal HyDE sends","i":"Lets hyprsunset poke the module to refresh. Don't change unless HyDE changes its signal scheme."}
+  ]},
+ {"path":".config/waybar/modules/custom-weather.jsonc","owner":"halcyon","purpose":"Weather module (wttr.in). Our addition.",
+  "settings":[
+   {"p":"exec","c":"Script that produces the JSON","i":"get_weather.sh. Swap for another provider by replacing the script."},
+   {"p":"interval","c":"Refresh seconds","i":"900 = 15 min. Lower = fresher, more network; higher = calmer."},
+   {"p":"on-click","c":"Open full forecast","i":"xdg-open https://wttr.in. Change to your preferred weather site."},
+   {"p":"return-type / format","c":"Treat output as JSON, show {text}","i":"Lets the script pass text + tooltip separately."}
+  ]},
+ {"path":".config/waybar/scripts/get_weather.sh","owner":"script","purpose":"Fetches wttr.in current + summary, emits Waybar JSON. Retries up to 5x.",
+  "settings":[
+   {"p":"$1 (optional location)","c":"Override geolocation","i":"Pass a city from the module 'exec' to pin a location; empty = IP geolocation."},
+   {"p":"format=1 / format=4","c":"wttr.in output detail","i":"1 = '☁ +20°C (City)'; 4 = full one-line summary for the tooltip."},
+   {"p":"retry loop {1..5}","c":"Resilience","i":"wttr.in rate-limits occasionally; retries with 2s backoff."}
+  ]},
+ {"path":".config/waybar/scripts/audiopicker.sh","owner":"hyde","purpose":"HyDE audio device picker (rofi) — used by the volume modules' right-click."},
+ {"path":".config/waybar/includes/includes.json","owner":"halcyon","purpose":"Master include list for Waybar modules + a few global overrides (icon sizes, position).",
+  "settings":[
+   {"p":"include[]","c":"Load order of module files","i":"FIRST-WINS: earlier entries override later ones. Our modules/* glob loads before HyDE's ~/.local/share ones, so our overrides win."},
+   {"p":"tray / wlr-taskbar icon-size","c":"Icon sizing","i":"Pixel sizes + multipliers for the tray and taskbar."},
+   {"p":"position: top","c":"Bar edge","i":"Override here to move the bar globally (bottom/left/right)."}
+  ]},
+ {"path":".config/waybar/includes/*.css","owner":"hyde","purpose":"Global + border-radius CSS for Waybar (wallbash-managed)."},
+ {"path":".config/waybar/style.css","owner":"hyde","purpose":"Active Waybar stylesheet (generated)."},
+ {"path":".config/waybar/theme.css","owner":"hyde","purpose":"Wallbash theme CSS for Waybar."},
+ {"path":".config/waybar/user-style.css","owner":"hyde","purpose":"User CSS overrides for Waybar (safe place for hand CSS edits)."},
+
+ {"path":".config/wlogout/","owner":"hyde","purpose":"Power menu (logout/lock/reboot/shutdown/suspend/hibernate) — layouts, styles, icons."},
+
+ {"path":".config/yazi/yazi.toml","owner":"halcyon","purpose":"Terminal file manager config.",
+  "settings":[
+   {"p":"[mgr] show_hidden","c":"Show dotfiles by default","i":"true = hidden files visible on open. false = toggle with 'z'."},
+   {"p":"sort_by","c":"Sort key","i":"'natural' = human order (file2 before file10). 'alphabetical' = strict. 'size'/'mtime' also available."},
+   {"p":"sort_dir_first","c":"Directories on top","i":"true = folders first regardless of sort. false mixes files+dirs."},
+   {"p":"linemode","c":"What the right column shows","i":"'size' = file size. 'none'/'mtime'/'permissions'/'btime' alternatives."},
+   {"p":"[preview] max_width/height","c":"Image preview cap (px)","i":"1000 = previews downscaled to 1000px. Lower = faster previews, less detail."}
+  ]},
+ {"path":".config/yazi/theme.toml","owner":"halcyon","purpose":"Yazi Catppuccin theme (colors per file type / pane)."},
+
+ {"path":".config/mpv/mpv.conf","owner":"halcyon","purpose":"mpv config — surfaces the current song title/time in the terminal during yt-x 'Listen' (audio-only).",
+  "settings":[
+   {"p":"term-playing-msg","c":"Printed once when a track starts","i":"'♪ Now playing: ${media-title}'. Resolves from yt-x's .m3u8 EXTINF title. Change the prefix glyph freely."},
+   {"p":"term-status-msg","c":"Persistent bottom line while playing","i":"'⏱ ${time-pos} / ${duration}' = timer only (title already shown above). Add ${media-title} back if you want it repeated."}
+  ]},
+
+ {"path":".tmux.conf","owner":"halcyon","purpose":"tmux config — prefix, splits, vi copy, TPM plugins, Catppuccin theme.",
+  "settings":[
+   {"p":"prefix C-a","c":"tmux prefix key","i":"Ctrl-a (unbinds default C-b). Press it before any tmux command."},
+   {"p":"bind | / -","c":"Split panes (keep cwd)","i":"| = vertical split, - = horizontal. -c keeps the current directory."},
+   {"p":"bind r","c":"Reload config","i":"prefix + r re-sources ~/.tmux.conf and confirms."},
+   {"p":"bind -r j/k/l/h","c":"Resize pane (repeatable)","i":"prefix + j/k = down/up, l/h = right/left, by 5 cells. -r = hold to repeat. m = maximize toggle."},
+   {"p":"base-index / pane-base-index = 1","c":"Numbering starts at 1","i":"More natural than 0; pairs with keyboard layouts."},
+   {"p":"renumber-windows on","c":"Auto-compact window numbers","i":"Closing window 2 renumbers 3→2. Off = gaps left in numbering."},
+   {"p":"mode-keys vi + v/y","c":"vi-style copy mode","i":"v = begin selection, y = yank. Mouse-drag copy disabled to avoid clobbering."},
+   {"p":"@resurrect / @continuum","c":"Save & restore sessions across reboots","i":"capture-pane-contents on + restore on. Disable if you want clean sessions."},
+   {"p":"@catppuccin_flavour 'mocha'","c":"Theme variant","i":"mocha/latte/frappe/macchiato. Change for a different palette."},
+   {"p":"@catppuccin_status_modules_right","c":"Right status modules","i":"application session date_time. Reorder/remove to customize the status bar."}
+  ]}
+]
+</script>
+
+<script>
+(function(){
+  const data = JSON.parse(document.getElementById('config-data').textContent);
+  const treeEl = document.getElementById('tree');
+  const detailEl = document.getElementById('detail');
+  const qEl = document.getElementById('q');
+  const ownerLabel = {halcyon:'halcyon', hyde:'HyDE', script:'script'};
+  const ownerClass = {halcyon:'b-halcyon', hyde:'b-hyde', script:'b-script'};
+
+  // Build a nested tree from flat paths.
+  function buildTree(paths){
+    const root = {name:'', dirs:{}, files:[]};
+    for(const p of paths){
+      const parts = p.split('/');
+      let node = root;
+      for(let i=0;i<parts.length-1;i++){
+        const n = parts[i];
+        node.dirs[n] = node.dirs[n] || {name:n, dirs:{}, files:[], parent:node};
+        node = node.dirs[n];
+      }
+      node.files.push({path:p, leaf:parts[parts.length-1]});
+    }
+    return root;
+  }
+
+  const byPath = {};
+  data.forEach(d => byPath[d.path] = d);
+  // collapse runs of similar HyDE siblings to keep the tree readable
+  const tree = buildTree(data.map(d => d.path));
+
+  function nodeFor(d){
+    return `<span class="badge mini ${ownerClass[d.owner]||'b-hyde'}">${ownerLabel[d.owner]||d.owner}</span>`;
+  }
+
+  function renderDir(node, root){
+    const dirKeys = Object.keys(node.dirs).sort();
+    const isRoot = node === root;
+    const label = isRoot ? '.config' : node.name;
+    const html = `<div class="dir${isRoot?'':' collapsed'}">` +
+      `<div class="label"><span class="caret"></span>${label}</div><div class="children">`;
+    let body = '';
+    dirKeys.forEach(k => body += renderDir(node.dirs[k], root));
+    node.files.slice().sort((a,b)=>a.leaf.localeCompare(b.leaf)).forEach(f => {
+      const d = byPath[f.path];
+      body += `<div class="file" data-path="${f.path}">${nodeFor(d||{owner:'hyde'})}<span class="name">${f.leaf}</span></div>`;
+    });
+    return html + body + `</div></div>`;
+  }
+  treeEl.innerHTML = renderDir(tree, tree);
+
+  // expand/collapse
+  treeEl.addEventListener('click', e => {
+    const dir = e.target.closest('.dir > .label');
+    if(dir){ dir.parentElement.classList.toggle('collapsed'); return; }
+    const file = e.target.closest('.file');
+    if(file){ select(file.dataset.path, file); }
+  });
+
+  function escape(s){ return (s||'').replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])); }
+
+  function renderDetail(d){
+    if(!d) return `<p class="empty">No notes for this file yet.</p>`;
+    let h = `<div class="pathbar">${escape(d.path)}</div>`;
+    h += `<h2>${escape(d.path.split('/').pop())} <span class="badge ${ownerClass[d.owner]||'b-hyde'}">${ownerLabel[d.owner]||d.owner}</span></h2>`;
+    h += `<p class="purpose">${escape(d.purpose)}</p>`;
+    if(d.note) h += `<div class="callout">${escape(d.note)}</div>`;
+    if(d.settings && d.settings.length){
+      h += `<div class="section">Settings — what they control &amp; the impact of changing them</div>`;
+      h += `<table><thead><tr><th>Setting</th><th>Value / knob</th><th>What it controls</th><th>Impact of changing it</th></tr></thead><tbody>`;
+      d.settings.forEach(s => {
+        h += `<tr><td class="param">${escape(s.p)}</td><td class="val">${escape(s.v||'—')}</td><td>${escape(s.c)}</td><td>${escape(s.i)}</td></tr>`;
+      });
+      h += `</tbody></table>`;
+    } else if(d.owner==='hyde'){
+      h += `<div class="callout" style="border-left-color:var(--hyde)">HyDE-managed — often regenerated by wallbash / HyDE scripts. We avoid hand-editing these; our overrides live in user-owned files (see halcyon entries).</div>`;
+    }
+    return h;
+  }
+
+  function select(path, el){
+    document.querySelectorAll('.file.active').forEach(f => f.classList.remove('active'));
+    if(el) el.classList.add('active');
+    detailEl.innerHTML = renderDetail(byPath[path]);
+    detailEl.scrollTop = 0;
+  }
+
+  // search: filter tree + match settings keys/controls/impact
+  function filter(q){
+    q = q.trim().toLowerCase();
+    if(!q){
+      document.querySelectorAll('.file, .dir').forEach(el => el.style.display='');
+      return;
+    }
+    const matchFile = (path) => {
+      const d = byPath[path]; if(!d) return path.toLowerCase().includes(q);
+      if(path.toLowerCase().includes(q)) return true;
+      if((d.purpose||'').toLowerCase().includes(q)) return true;
+      return (d.settings||[]).some(s => (s.p+s.c+s.i+(s.v||'')).toLowerCase().includes(q));
+    };
+    // walk tree, hide non-matching files, hide dirs with no visible descendants
+    function walk(node){
+      let anyVisible = false;
+      Object.values(node.dirs).forEach(child => { if(walk(child)) anyVisible=true; });
+      node.files.forEach(f => {
+        const show = matchFile(f.path);
+        f._el = f._el || treeEl.querySelector(`.file[data-path="${CSS.escape(f.path)}"]`);
+        if(f._el){ f._el.style.display = show ? '' : 'none'; if(show) anyVisible=true; }
+      });
+      if(node._dirEl === undefined && node.name){
+        // best-effort: find the dir container by its label text
+      }
+      return anyVisible;
+    }
+    walk(tree);
+    // expand all so matches are visible
+    document.querySelectorAll('.dir.collapsed').forEach(d => d.classList.remove('collapsed'));
+    // hide empty dir rows (simple pass: hide .dir with no visible .file descendants)
+    document.querySelectorAll('.dir').forEach(dir => {
+      const hasFile = dir.querySelector('.file:not([style*="none"])');
+      dir.style.display = hasFile ? '' : 'none';
+    });
+  }
+  qEl.addEventListener('input', () => filter(qEl.value));
+})();
+</script>
+</body>
+</html>
