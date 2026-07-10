@@ -6,9 +6,6 @@
 # (HyDE already provides Hyprland, Waybar, rofi, dunst, kitty, fonts, etc.
 #  This file lists ONLY the extras halcyon adds.)
 
-# terminal multiplexer
-tmux
-
 # terminal file manager + preview helpers
 yazi
 ffmpegthumbnailer

@@ -7,7 +7,7 @@
 #
 # Usage:
 #   ./install.sh            # link everything
-#   ./install.sh --packages # also install packages (packages.txt + aur.txt) & TPM
+#   ./install.sh --packages # also install packages (packages.txt + aur.txt)
 #   ./install.sh --dry-run  # show what would happen, change nothing
 #   ./install.sh --force    # overwrite existing symlinks without backup
 
@@ -49,9 +49,7 @@ LINKS=(
   ".config/yazi            :: $CONFIG_HOME/yazi"
   ".config/hyde/config.toml:: $CONFIG_HOME/hyde/config.toml"
   ".config/hyde/wallbash   :: $CONFIG_HOME/hyde/wallbash"
-  ".tmux.conf              :: $HOME/.tmux.conf"
   # App-launcher entries (linked individually so other .desktop files are untouched)
-  ".local/share/applications/tmux.desktop :: $DATA_HOME/applications/tmux.desktop"
   ".local/share/applications/yt-x.desktop :: $DATA_HOME/applications/yt-x.desktop"
 )
 
@@ -94,14 +92,6 @@ install_packages() {
       warn "no AUR helper (paru/yay) found; skipping aur.txt"
       warn "install one first, e.g.: git clone https://aur.archlinux.org/yay.git && cd yay && makepkg -si"
     fi
-  fi
-
-  # tmux plugin manager (needed by ~/.tmux.conf)
-  if [[ -d "$HOME/.tmux/plugins/tpm" ]]; then
-    ok "tpm already present"
-  else
-    info "Bootstrapping tmux plugin manager (TPM)"
-    run git clone --depth 1 https://github.com/tmux-plugins/tpm "$HOME/.tmux/plugins/tpm"
   fi
 }
 
