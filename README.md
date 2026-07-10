@@ -166,14 +166,14 @@ The dry run shows exactly what will be linked or backed up — **nothing is chan
 
 ```bash
 ./install.sh              # symlink configs only
-# or, to also install the extra tools halcyon uses + tmux TPM:
+# or, to also install the extra tools halcyon uses:
 ./install.sh --packages
 ```
 
 The **`--packages`** flag installs the packages listed in `packages.txt` (pacman) and
-`aur.txt` (AUR, via `paru`/`yay`) and bootstraps the tmux plugin manager — the tools on
-top of a HyDE base that halcyon relies on (`tmux`, `yazi`, `yt-dlp`, `mpv`, `swappy`,
-`yt-x`, …). Preview it with `./install.sh --packages --dry-run`.
+`aur.txt` (AUR, via `paru`/`yay`) — the tools on top of a HyDE base that halcyon relies
+on (`yazi`, `yt-dlp`, `mpv`, `swappy`, `yt-x`, …). Preview it with
+`./install.sh --packages --dry-run`.
 
 Any existing config is **moved to a timestamped backup** at
 `~/.dotfiles-backup/<YYYYMMDD-HHMMSS>/` before a symlink is created, so nothing is

@@ -188,11 +188,10 @@ cd ~/halcyon
 to `~/.dotfiles-backup/<timestamp>/`. Re-runnable any time.
 
 The **`--packages`** flag also installs the extra tools halcyon uses on top of HyDE
-(from `packages.txt` + `aur.txt`) and bootstraps the tmux plugin manager (TPM):
+(from `packages.txt` + `aur.txt`):
 
-- **pacman:** `tmux`, `yazi` (+ preview helpers), `yt-dlp`, `mpv`, `swappy`
+- **pacman:** `yazi` (+ preview helpers), `yt-dlp`, `mpv`, `swappy`
 - **AUR:** `yt-x` (needs `paru`/`yay`)
-- **TPM:** cloned to `~/.tmux/plugins/tpm` (then in tmux press `prefix + I` to install plugins)
 
 Run plain `./install.sh` (no flag) to only symlink configs without touching packages.
 Preview everything first with `./install.sh --packages --dry-run`.
@@ -229,7 +228,7 @@ git clone https://aur.archlinux.org/yay.git && cd yay && makepkg -si && cd .. &&
 git clone --depth 1 https://github.com/HyDE-Project/HyDE ~/HyDE
 cd ~/HyDE/Scripts && ./install.sh && reboot
 
-# --- halcyon (configs + extra packages + TPM) ---
+# --- halcyon (configs + extra packages) ---
 git clone https://github.com/sm60786/halcyon-rice ~/halcyon
 cd ~/halcyon && ./install.sh --packages
 ```
